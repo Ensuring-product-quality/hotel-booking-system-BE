@@ -1,0 +1,21 @@
+package com.hotelnow.backend.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class HotelResponseDTO {
+    private Long id;
+    private String name;
+    private String address;
+    private String city;
+    private Integer stars;
+    private String description;
+    private String status;
+    private Double averageRating;
+}
