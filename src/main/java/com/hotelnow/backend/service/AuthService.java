@@ -41,13 +41,13 @@ public class AuthService {
             throw new BadRequestException("Email is already registered");
         }
 
-        // Standard user role is CUSTOMER, starting with inactive status
+        // Standard user role is CUSTOMER, starting with active status for easy testing
         User user = User.builder()
                 .username(registerDTO.getUsername())
                 .password(passwordEncoder.encode(registerDTO.getPassword()))
                 .email(registerDTO.getEmail())
                 .role(Role.CUSTOMER)
-                .status("inactive")
+                .status("active")
                 .build();
 
         User savedUser = userRepository.save(user);
