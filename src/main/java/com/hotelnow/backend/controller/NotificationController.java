@@ -41,4 +41,13 @@ public class NotificationController {
         notificationService.markAsRead(notificationId);
         return ResponseEntity.ok(ApiResponse.success("Notification marked as read", null, HttpStatus.OK.value()));
     }
+
+    @PostMapping("/mark-all-as-read")
+    public ResponseEntity<ApiResponse<Integer>> markAllAsRead() {
+        int updated = notificationService.markAllAsRead();
+        return ResponseEntity.ok(ApiResponse.success(
+                "All notifications marked as read",
+                updated,
+                HttpStatus.OK.value()));
+    }
 }

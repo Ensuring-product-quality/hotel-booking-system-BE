@@ -48,6 +48,12 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    @Transactional
+    public int markAllAsRead() {
+        User current = currentUserService.requireCurrentUser();
+        return notificationRepository.markAllAsReadByUserId(current.getId());
+    }
+
     private NotificationResponseDTO mapToNotificationResponse(Notification notification) {
         return NotificationResponseDTO.builder()
                 .id(notification.getId())
