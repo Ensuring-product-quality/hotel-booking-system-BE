@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class ReviewResponseDTO {
     private Long id;
     private Long userId;
+    private String username;
     private Long hotelId;
     private Long roomId;
     private Integer rating;

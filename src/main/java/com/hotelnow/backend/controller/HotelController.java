@@ -45,7 +45,7 @@ public class HotelController {
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
-    @GetMapping("/{hotelId}/search")
+    @GetMapping("/search")
     public ResponseEntity<ApiResponse<PageResponse<HotelResponseDTO>>> searchHotels(
             @RequestParam(required = false) String city,
             @RequestParam(required = false) Integer stars,

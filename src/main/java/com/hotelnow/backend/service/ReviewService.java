@@ -137,6 +137,7 @@ public class ReviewService {
         return ReviewResponseDTO.builder()
                 .id(review.getId())
                 .userId(review.getUser().getId())
+                .username(review.getUser().getUsername())
                 .hotelId(review.getHotel() == null ? null : review.getHotel().getId())
                 .roomId(review.getRoom() == null ? null : review.getRoom().getId())
                 .rating(review.getRating())
