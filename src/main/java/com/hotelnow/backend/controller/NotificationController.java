@@ -1,11 +1,12 @@
 package com.hotelnow.backend.controller;
 
+import java.util.Set;
+
 import com.hotelnow.backend.dto.*;
 import com.hotelnow.backend.security.UserPrincipal;
 import com.hotelnow.backend.service.NotificationService;
-import org.springframework.data.domain.PageRequest;
+import com.hotelnow.backend.util.PageableFactory;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,9 +30,7 @@ public class NotificationController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,desc") String sort) {
 
-        String[] sortParams = sort.split(",");
-        Sort sorting = Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]);
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "status", "createdAt"));
 
         PageResponse<NotificationResponseDTO> data = notificationService.getNotifications(userPrincipal.getId(), status, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));

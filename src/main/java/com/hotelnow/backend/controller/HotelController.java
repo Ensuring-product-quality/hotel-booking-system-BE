@@ -1,11 +1,12 @@
 package com.hotelnow.backend.controller;
 
+import java.util.Set;
+
 import com.hotelnow.backend.dto.*;
 import com.hotelnow.backend.service.HotelService;
+import com.hotelnow.backend.util.PageableFactory;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,9 +39,7 @@ public class HotelController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
 
-        String[] sortParams = sort.split(",");
-        Sort sorting = Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]);
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "createdAt", "updatedAt"));
 
         PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
@@ -62,9 +61,7 @@ public class HotelController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
 
-        String[] sortParams = sort.split(",");
-        Sort sorting = Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]);
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "createdAt", "updatedAt"));
 
         PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
