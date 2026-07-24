@@ -8,7 +8,11 @@ import lombok.Data;
 
 @Data
 public class ReviewCreateDTO {
-    @NotNull(message = "User ID is required")
+    /**
+     * Backward-compatible input only. The backend ignores it and uses the
+     * authenticated user to prevent review impersonation.
+     */
+    @Deprecated
     private Long userId;
 
     private Long hotelId;
