@@ -43,6 +43,7 @@ public class HotelService {
                         .roomNumber(r.getRoomNumber())
                         .type(r.getType().name())
                         .price(r.getPrice())
+                        .capacity(r.getCapacity())
                         .description(r.getDescription())
                         .status(r.getStatus())
                         .build())

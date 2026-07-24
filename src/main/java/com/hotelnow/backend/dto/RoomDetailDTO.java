@@ -1,9 +1,7 @@
 package com.hotelnow.backend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -17,7 +15,8 @@ public class RoomDetailDTO {
     private String roomNumber;
     private String type;
     private BigDecimal price;
+    private Integer capacity;
     private String description;
     private String status;
-    private List<String> images; // List of image URLs
+    private List<String> images;
 }

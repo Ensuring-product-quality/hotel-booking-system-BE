@@ -50,6 +50,9 @@ public class BookingService {
         if (!"active".equalsIgnoreCase(room.getStatus())) {
             throw new BadRequestException("Room is not active for booking");
         }
+        if (createDTO.getGuests() > room.getCapacity()) {
+            throw new BadRequestException("Guest count exceeds room capacity of " + room.getCapacity());
+        }
 
         List<BookingStatus> activeStatuses =
                 Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
@@ -277,6 +280,7 @@ public class BookingService {
                 .roomNumber(room.getRoomNumber())
                 .type(room.getType().name())
                 .price(room.getPrice())
+                .capacity(room.getCapacity())
                 .description(room.getDescription())
                 .status(room.getStatus())
                 .build();

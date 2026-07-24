@@ -97,7 +97,8 @@ public class DataInitializer implements CommandLineRunner {
                 .hotel(h1)
                 .roomNumber("101")
                 .type(RoomType.SINGLE)
-                .price(BigDecimal.valueOf(1500000.00)) // 1.5M VND
+                .price(BigDecimal.valueOf(1500000.00))
+                .capacity(1) // 1.5M VND
                 .description("Phòng đơn ấm cúng đầy đủ tiện nghi, view sân vườn.")
                 .status("active")
                 .build();
@@ -106,7 +107,8 @@ public class DataInitializer implements CommandLineRunner {
                 .hotel(h1)
                 .roomNumber("102")
                 .type(RoomType.DOUBLE)
-                .price(BigDecimal.valueOf(2500000.00)) // 2.5M VND
+                .price(BigDecimal.valueOf(2500000.00))
+                .capacity(2) // 2.5M VND
                 .description("Phòng đôi rộng rãi thích hợp cho gia đình hoặc cặp đôi, hướng Hồ Tây.")
                 .status("active")
                 .build();
@@ -115,7 +117,8 @@ public class DataInitializer implements CommandLineRunner {
                 .hotel(h1)
                 .roomNumber("201")
                 .type(RoomType.DELUXE)
-                .price(BigDecimal.valueOf(4000000.00)) // 4M VND
+                .price(BigDecimal.valueOf(4000000.00))
+                .capacity(3) // 4M VND
                 .description("Phòng Deluxe sang trọng với ban công riêng ngắm hoàng hôn Hồ Tây.")
                 .status("active")
                 .build();
@@ -126,6 +129,7 @@ public class DataInitializer implements CommandLineRunner {
                 .roomNumber("301")
                 .type(RoomType.SINGLE)
                 .price(BigDecimal.valueOf(1800000.00))
+                .capacity(1)
                 .description("Phòng đơn thiết kế tinh tế tinh xảo kiểu Pháp.")
                 .status("active")
                 .build();
@@ -135,6 +139,7 @@ public class DataInitializer implements CommandLineRunner {
                 .roomNumber("302")
                 .type(RoomType.SUITE)
                 .price(BigDecimal.valueOf(5500000.00))
+                .capacity(4)
                 .description("Phòng Suite tổng thống siêu sang trọng view toàn cảnh Sài Gòn.")
                 .status("active")
                 .build();
@@ -145,6 +150,7 @@ public class DataInitializer implements CommandLineRunner {
                 .roomNumber("401")
                 .type(RoomType.DOUBLE)
                 .price(BigDecimal.valueOf(3000000.00))
+                .capacity(2)
                 .description("Phòng đôi hướng biển, nghe sóng vỗ rì rào.")
                 .status("active")
                 .build();
@@ -154,6 +160,7 @@ public class DataInitializer implements CommandLineRunner {
                 .roomNumber("402")
                 .type(RoomType.DELUXE)
                 .price(BigDecimal.valueOf(4800000.00))
+                .capacity(3)
                 .description("Phòng Deluxe sát biển cực kỳ riêng tư và lãng mạn.")
                 .status("active")
                 .build();
