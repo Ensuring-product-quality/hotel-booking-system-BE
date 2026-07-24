@@ -108,30 +108,51 @@ public class BookingService {
             throw new BadRequestException("Customers can only edit bookings awaiting payment");
         }
 
-        validateDates(updateDTO.getCheckInDate(), updateDTO.getCheckOutDate());
-        if (!booking.getCheckInDate().equals(updateDTO.getCheckInDate())
-                || !booking.getCheckOutDate().equals(updateDTO.getCheckOutDate())) {
-            Room room = roomRepository.findByIdForUpdate(booking.getRoom().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
-            List<BookingStatus> activeStatuses =
-                    Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
-            boolean overlaps = bookingRepository.findAll().stream()
-                    .filter(other -> !other.getId().equals(bookingId))
-                    .filter(other -> other.getRoom().getId().equals(room.getId()))
-                    .filter(other -> activeStatuses.contains(other.getStatus()))
-                    .anyMatch(other -> other.getCheckInDate().isBefore(updateDTO.getCheckOutDate())
-                            && other.getCheckOutDate().isAfter(updateDTO.getCheckInDate()));
-            if (overlaps) {
-                throw new BookingConflictException("The room is already booked for the selected dates");
-            }
-            booking.setTotalPrice(calculateTotal(room, updateDTO.getCheckInDate(), updateDTO.getCheckOutDate()));
+        if (!currentUserService.isStaff(current)
+                && updateDTO.getStatus() != null
+                && !updateDTO.getStatus().isBlank()) {
+            throw new BadRequestException("Customers cannot change booking status");
         }
 
-        booking.setCheckInDate(updateDTO.getCheckInDate());
-        booking.setCheckOutDate(updateDTO.getCheckOutDate());
-        booking.setGuests(updateDTO.getGuests());
+        LocalDate nextCheckIn = updateDTO.getCheckInDate() != null
+                ? updateDTO.getCheckInDate() : booking.getCheckInDate();
+        LocalDate nextCheckOut = updateDTO.getCheckOutDate() != null
+                ? updateDTO.getCheckOutDate() : booking.getCheckOutDate();
+        Integer nextGuests = updateDTO.getGuests() != null
+                ? updateDTO.getGuests() : booking.getGuests();
+        validateDates(nextCheckIn, nextCheckOut);
 
-        if (currentUserService.isStaff(current)) {
+        boolean datesChanged = !booking.getCheckInDate().equals(nextCheckIn)
+                || !booking.getCheckOutDate().equals(nextCheckOut);
+        boolean guestsChanged = !booking.getGuests().equals(nextGuests);
+        if (datesChanged || guestsChanged) {
+            Room room = roomRepository.findByIdForUpdate(booking.getRoom().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+            if (!"active".equalsIgnoreCase(room.getStatus())) {
+                throw new BadRequestException("Room is not active for booking");
+            }
+            if (nextGuests > room.getCapacity()) {
+                throw new BadRequestException("Guest count exceeds room capacity of " + room.getCapacity());
+            }
+
+            List<BookingStatus> activeStatuses =
+                    Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
+            if (bookingRepository.hasOverlappingBookingsExcluding(
+                    bookingId, room.getId(), nextCheckIn, nextCheckOut, activeStatuses)) {
+                throw new BookingConflictException("The room is already booked for the selected dates");
+            }
+            if (datesChanged) {
+                booking.setTotalPrice(calculateTotal(room, nextCheckIn, nextCheckOut));
+            }
+        }
+
+        booking.setCheckInDate(nextCheckIn);
+        booking.setCheckOutDate(nextCheckOut);
+        booking.setGuests(nextGuests);
+
+        if (currentUserService.isStaff(current)
+                && updateDTO.getStatus() != null
+                && !updateDTO.getStatus().isBlank()) {
             BookingStatus nextStatus = parseRequiredStatus(updateDTO.getStatus());
             requireValidTransition(booking.getStatus(), nextStatus);
             booking.setStatus(nextStatus);

@@ -21,6 +21,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                    @Param("checkOutDate") LocalDate checkOutDate,
                                    @Param("activeStatuses") List<BookingStatus> activeStatuses);
 
+    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.room.id = :roomId " +
+            "AND b.id <> :bookingId " +
+            "AND b.status IN :activeStatuses " +
+            "AND b.checkInDate < :checkOutDate " +
+            "AND b.checkOutDate > :checkInDate")
+    boolean hasOverlappingBookingsExcluding(
+            @Param("bookingId") Long bookingId,
+            @Param("roomId") Long roomId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("activeStatuses") List<BookingStatus> activeStatuses);
+
     @Query("SELECT b FROM Booking b WHERE " +
             "(:userId IS NULL OR b.user.id = :userId) AND " +
             "(:status IS NULL OR b.status = :status) AND " +
