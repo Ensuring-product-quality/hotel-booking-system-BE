@@ -16,5 +16,6 @@ public class UserDetailDTO {
     private String email;
     private String role;
     private String status;
+    private String avatarUrl;
     private List<BookingResponseDTO> bookings;
 }

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,10 +21,13 @@ public class HotelService {
 
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
+    private final FileStorageService fileStorageService;
 
-    public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository) {
+    public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository,
+                        FileStorageService fileStorageService) {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @Transactional(readOnly = true)
@@ -69,7 +73,7 @@ public class HotelService {
                 .description(hotel.getDescription())
                 .status(hotel.getStatus())
                 .averageRating(hotel.getAverageRating())
-                .images(Collections.emptyList()) // Mock empty list
+                .images(toImages(hotel.getImageUrl()))
                 .rooms(rooms)
                 .build();
     }
@@ -112,6 +116,16 @@ public class HotelService {
         hotelRepository.delete(hotel);
     }
 
+    @Transactional
+    public String uploadImage(Long hotelId, MultipartFile file) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+        String imageUrl = fileStorageService.storeImage(file, "hotels");
+        hotel.setImageUrl(imageUrl);
+        hotelRepository.save(hotel);
+        return imageUrl;
+    }
+
     private HotelResponseDTO mapToHotelResponse(Hotel hotel) {
         return HotelResponseDTO.builder()
                 .id(hotel.getId())
@@ -125,6 +139,12 @@ public class HotelService {
                 .price(roomRepository
                         .findFirstByHotelIdAndStatusOrderByPriceAsc(hotel.getId(), "active")
                         .map(room -> room.getPrice()).orElse(null))
+                .images(toImages(hotel.getImageUrl()))
                 .build();
+    }
+
+    private List<String> toImages(String imageUrl) {
+        return imageUrl == null || imageUrl.isBlank()
+                ? Collections.emptyList() : Collections.singletonList(imageUrl);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,15 +24,18 @@ public class UserService {
     private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
     private final CurrentUserService currentUserService;
+    private final FileStorageService fileStorageService;
 
     public UserService(UserRepository userRepository,
                        BookingRepository bookingRepository,
                        PasswordEncoder passwordEncoder,
-                       CurrentUserService currentUserService) {
+                       CurrentUserService currentUserService,
+                       FileStorageService fileStorageService) {
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.passwordEncoder = passwordEncoder;
         this.currentUserService = currentUserService;
+        this.fileStorageService = fileStorageService;
     }
 
     @Transactional(readOnly = true)
@@ -71,6 +75,7 @@ public class UserService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .status(user.getStatus())
+                .avatarUrl(user.getAvatarUrl())
                 .bookings(bookings)
                 .build();
     }
@@ -130,9 +135,12 @@ public class UserService {
     }
 
     @Transactional
-    public String uploadAvatar(Long userId, String avatarUrl) {
+    public String uploadAvatar(Long userId, MultipartFile file) {
         currentUserService.requireSelfOrAdmin(userId);
-        findUser(userId);
+        User user = findUser(userId);
+        String avatarUrl = fileStorageService.storeImage(file, "avatars");
+        user.setAvatarUrl(avatarUrl);
+        userRepository.save(user);
         return avatarUrl;
     }
 
@@ -178,6 +186,7 @@ public class UserService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .status(user.getStatus())
+                .avatarUrl(user.getAvatarUrl())
                 .build();
     }
 }

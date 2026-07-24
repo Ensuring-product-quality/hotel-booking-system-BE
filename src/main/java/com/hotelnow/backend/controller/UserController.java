@@ -12,18 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
-
-    @Value("${app.base-url}")
-    private String baseUrl;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -79,8 +73,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<String>> uploadAvatar(
             @PathVariable Long userId,
             @RequestParam("file") MultipartFile file) {
-        String mockAvatarUrl = baseUrl + "/static/avatars/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
-        String savedUrl = userService.uploadAvatar(userId, mockAvatarUrl);
+        String savedUrl = userService.uploadAvatar(userId, file);
         return ResponseEntity.ok(ApiResponse.success("Avatar uploaded successfully", savedUrl, HttpStatus.OK.value()));
     }
 

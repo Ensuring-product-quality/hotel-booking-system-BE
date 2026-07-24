@@ -12,18 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/hotels")
 public class HotelController {
 
     private final HotelService hotelService;
-
-    @Value("${app.base-url}")
-    private String baseUrl;
 
     public HotelController(HotelService hotelService) {
         this.hotelService = hotelService;
@@ -97,7 +91,7 @@ public class HotelController {
     public ResponseEntity<ApiResponse<String>> uploadHotelImage(
             @PathVariable Long hotelId,
             @RequestParam("file") MultipartFile file) {
-        String mockUrl = baseUrl + "/static/images/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
-        return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", mockUrl, HttpStatus.OK.value()));
+        String imageUrl = hotelService.uploadImage(hotelId, file);
+        return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", imageUrl, HttpStatus.OK.value()));
     }
 }
