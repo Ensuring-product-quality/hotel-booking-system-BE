@@ -19,6 +19,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     boolean existsByHotelIdAndRoomNumberIgnoreCaseAndIdNot(
             Long hotelId, String roomNumber, Long roomId);
 
+    Optional<Room> findFirstByHotelIdAndStatusOrderByPriceAsc(Long hotelId, String status);
+
     @Query("SELECT r FROM Room r WHERE " +
             "(:hotelId IS NULL OR r.hotel.id = :hotelId) AND " +
             "(:status IS NULL OR r.status = :status) AND " +

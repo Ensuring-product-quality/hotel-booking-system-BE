@@ -39,7 +39,7 @@ public class HotelController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
 
-        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "createdAt", "updatedAt"));
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "price", "createdAt", "updatedAt"));
 
         PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
@@ -61,7 +61,7 @@ public class HotelController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
 
-        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "createdAt", "updatedAt"));
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "price", "createdAt", "updatedAt"));
 
         PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));

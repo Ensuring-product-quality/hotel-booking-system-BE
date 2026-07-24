@@ -6,7 +6,9 @@ import com.hotelnow.backend.exception.ResourceNotFoundException;
 import com.hotelnow.backend.repository.HotelRepository;
 import com.hotelnow.backend.repository.RoomRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
@@ -26,7 +28,16 @@ public class HotelService {
 
     @Transactional(readOnly = true)
     public PageResponse<HotelResponseDTO> searchHotels(String city, Integer stars, String keyword, String status, Pageable pageable) {
-        Page<Hotel> hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, pageable);
+        Page<Hotel> hotelsPage;
+        Sort.Order priceOrder = pageable.getSort().getOrderFor("price");
+        if (priceOrder != null) {
+            Pageable pricePage = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+            hotelsPage = priceOrder.isAscending()
+                    ? hotelRepository.searchHotelsByLowestPriceAsc(city, stars, keyword, status, pricePage)
+                    : hotelRepository.searchHotelsByLowestPriceDesc(city, stars, keyword, status, pricePage);
+        } else {
+            hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, pageable);
+        }
         return PageResponse.fromPage(hotelsPage.map(this::mapToHotelResponse));
     }
 
@@ -111,6 +122,9 @@ public class HotelService {
                 .description(hotel.getDescription())
                 .status(hotel.getStatus())
                 .averageRating(hotel.getAverageRating())
+                .price(roomRepository
+                        .findFirstByHotelIdAndStatusOrderByPriceAsc(hotel.getId(), "active")
+                        .map(room -> room.getPrice()).orElse(null))
                 .build();
     }
 }
