@@ -3,6 +3,7 @@ package com.hotelnow.backend.dto;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,4 +18,5 @@ public class RoomResponseDTO {
     private Integer capacity;
     private String description;
     private String status;
+    private List<String> images;
 }

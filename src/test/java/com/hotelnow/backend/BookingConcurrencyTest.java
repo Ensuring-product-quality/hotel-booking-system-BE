@@ -36,6 +36,9 @@ public class BookingConcurrencyTest {
     private RoomRepository roomRepository;
 
     @Autowired
+    private RoomImageRepository roomImageRepository;
+
+    @Autowired
     private BookingRepository bookingRepository;
 
     private User user;
@@ -44,6 +47,7 @@ public class BookingConcurrencyTest {
     @BeforeEach
     public void setup() {
         bookingRepository.deleteAll();
+        roomImageRepository.deleteAll();
         roomRepository.deleteAll();
         hotelRepository.deleteAll();
         userRepository.deleteAll();

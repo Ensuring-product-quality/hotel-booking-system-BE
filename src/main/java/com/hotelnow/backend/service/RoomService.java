@@ -133,6 +133,9 @@ public class RoomService {
     }
 
     private RoomResponseDTO mapToRoomResponse(Room room) {
+        List<String> images = roomImageRepository.findByRoomId(room.getId()).stream()
+                .map(image -> image.getImageUrl())
+                .toList();
         return RoomResponseDTO.builder()
                 .id(room.getId())
                 .hotelId(room.getHotel().getId())
@@ -142,6 +145,7 @@ public class RoomService {
                 .capacity(room.getCapacity())
                 .description(room.getDescription())
                 .status(room.getStatus())
+                .images(images)
                 .build();
     }
 }

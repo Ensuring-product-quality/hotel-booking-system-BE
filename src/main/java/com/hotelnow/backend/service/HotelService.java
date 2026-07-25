@@ -4,6 +4,7 @@ import com.hotelnow.backend.dto.*;
 import com.hotelnow.backend.entity.Hotel;
 import com.hotelnow.backend.exception.ResourceNotFoundException;
 import com.hotelnow.backend.repository.HotelRepository;
+import com.hotelnow.backend.repository.RoomImageRepository;
 import com.hotelnow.backend.repository.RoomRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,12 +23,15 @@ public class HotelService {
 
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
+    private final RoomImageRepository roomImageRepository;
     private final FileStorageService fileStorageService;
 
     public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository,
+                        RoomImageRepository roomImageRepository,
                         FileStorageService fileStorageService) {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
+        this.roomImageRepository = roomImageRepository;
         this.fileStorageService = fileStorageService;
     }
 
@@ -52,16 +57,22 @@ public class HotelService {
 
         List<RoomResponseDTO> rooms = roomRepository.findAll().stream()
                 .filter(r -> r.getHotel().getId().equals(hotelId))
-                .map(r -> RoomResponseDTO.builder()
-                        .id(r.getId())
-                        .hotelId(hotelId)
-                        .roomNumber(r.getRoomNumber())
-                        .type(r.getType().name())
-                        .price(r.getPrice())
-                        .capacity(r.getCapacity())
-                        .description(r.getDescription())
-                        .status(r.getStatus())
-                        .build())
+                .map(r -> {
+                    List<String> roomImages = roomImageRepository.findByRoomId(r.getId()).stream()
+                            .map(img -> img.getImageUrl())
+                            .toList();
+                    return RoomResponseDTO.builder()
+                            .id(r.getId())
+                            .hotelId(hotelId)
+                            .roomNumber(r.getRoomNumber())
+                            .type(r.getType().name())
+                            .price(r.getPrice())
+                            .capacity(r.getCapacity())
+                            .description(r.getDescription())
+                            .status(r.getStatus())
+                            .images(roomImages)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return HotelDetailDTO.builder()
@@ -144,7 +155,11 @@ public class HotelService {
     }
 
     private List<String> toImages(String imageUrl) {
-        return imageUrl == null || imageUrl.isBlank()
-                ? Collections.emptyList() : Collections.singletonList(imageUrl);
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(imageUrl.split(","))
+                .map(String::trim)
+                .toList();
     }
 }
