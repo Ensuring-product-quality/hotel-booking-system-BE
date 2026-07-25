@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
     @Query("SELECT h FROM Hotel h WHERE " +
-            "(:city IS NULL OR LOWER(h.city) = LOWER(:city)) AND " +
+            "(:city IS NULL OR LOWER(:city) LIKE LOWER(CONCAT('%', h.city, '%')) OR LOWER(h.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
             "(:stars IS NULL OR h.stars = :stars) AND " +
             "(:status IS NULL OR h.status = :status) AND " +
             "(:keyword IS NULL OR LOWER(h.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(h.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
