@@ -15,6 +15,9 @@ public class BookingResponseDTO {
     private Long id;
     private Long userId;
     private Long roomId;
+    private String roomNumber;
+    private Long hotelId;
+    private String hotelName;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private Integer guests;

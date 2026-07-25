@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
@@ -18,26 +20,37 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ReviewResponseDTO>>> getReviews(
+            @RequestParam(required = false) Long hotelId,
+            @RequestParam(required = false) Long roomId) {
+        return ResponseEntity.ok(ApiResponse.success(reviewService.getReviews(hotelId, roomId)));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<ApiResponse<ReviewResponseDTO>> createReview(@Valid @RequestBody ReviewCreateDTO createDTO) {
-        ReviewResponseDTO data = reviewService.createReview(createDTO);
+    public ResponseEntity<ApiResponse<ReviewResponseDTO>> createReview(
+            @Valid @RequestBody ReviewCreateDTO createDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Review posted successfully", data, HttpStatus.CREATED.value()));
+                .body(ApiResponse.success(
+                        "Review posted successfully",
+                        reviewService.createReview(createDTO),
+                        HttpStatus.CREATED.value()));
     }
 
     @PutMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<ReviewResponseDTO>> updateReview(
             @PathVariable Long reviewId,
             @Valid @RequestBody ReviewUpdateDTO updateDTO) {
-        ReviewResponseDTO data = reviewService.updateReview(reviewId, updateDTO);
-        return ResponseEntity.ok(ApiResponse.success("Review updated successfully", data, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success(
+                "Review updated successfully",
+                reviewService.updateReview(reviewId, updateDTO),
+                HttpStatus.OK.value()));
     }
 
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId) {
         reviewService.deleteReview(reviewId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success("Review deleted successfully", null, HttpStatus.NO_CONTENT.value()));
+        return ResponseEntity.noContent().build();
     }
 }

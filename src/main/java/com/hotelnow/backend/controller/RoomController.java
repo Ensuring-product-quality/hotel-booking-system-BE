@@ -1,11 +1,12 @@
 package com.hotelnow.backend.controller;
 
+import java.util.Set;
+
 import com.hotelnow.backend.dto.*;
 import com.hotelnow.backend.service.RoomService;
+import com.hotelnow.backend.util.PageableFactory;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,9 +33,7 @@ public class RoomController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "roomNumber,asc") String sort) {
 
-        String[] sortParams = sort.split(",");
-        Sort sorting = Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]);
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "roomNumber", "type", "price", "capacity", "status", "createdAt", "updatedAt"));
 
         PageResponse<RoomResponseDTO> data = roomService.searchRooms(hotelId, status, keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));

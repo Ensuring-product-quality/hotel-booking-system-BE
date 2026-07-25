@@ -21,7 +21,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> register(@Valid @RequestBody UserRegisterDTO registerDTO) {
         UserResponseDTO data = authService.register(registerDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Registration successful. Please verify your email.", data, HttpStatus.CREATED.value()));
+                .body(ApiResponse.success("Registration successful", data, HttpStatus.CREATED.value()));
     }
 
     @PostMapping("/login")

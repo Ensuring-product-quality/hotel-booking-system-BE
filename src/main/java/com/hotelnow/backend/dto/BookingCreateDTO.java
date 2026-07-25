@@ -5,11 +5,16 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
 import java.time.LocalDate;
 
 @Data
 public class BookingCreateDTO {
-    @NotNull(message = "User ID is required")
+    /**
+     * Kept temporarily for backward-compatible deserialization. The backend
+     * deliberately ignores this value and uses the authenticated user.
+     */
+    @Deprecated
     private Long userId;
 
     @NotNull(message = "Room ID is required")

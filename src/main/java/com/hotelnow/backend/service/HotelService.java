@@ -6,9 +6,12 @@ import com.hotelnow.backend.exception.ResourceNotFoundException;
 import com.hotelnow.backend.repository.HotelRepository;
 import com.hotelnow.backend.repository.RoomRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,15 +21,27 @@ public class HotelService {
 
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
+    private final FileStorageService fileStorageService;
 
-    public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository) {
+    public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository,
+                        FileStorageService fileStorageService) {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @Transactional(readOnly = true)
     public PageResponse<HotelResponseDTO> searchHotels(String city, Integer stars, String keyword, String status, Pageable pageable) {
-        Page<Hotel> hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, pageable);
+        Page<Hotel> hotelsPage;
+        Sort.Order priceOrder = pageable.getSort().getOrderFor("price");
+        if (priceOrder != null) {
+            Pageable pricePage = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+            hotelsPage = priceOrder.isAscending()
+                    ? hotelRepository.searchHotelsByLowestPriceAsc(city, stars, keyword, status, pricePage)
+                    : hotelRepository.searchHotelsByLowestPriceDesc(city, stars, keyword, status, pricePage);
+        } else {
+            hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, pageable);
+        }
         return PageResponse.fromPage(hotelsPage.map(this::mapToHotelResponse));
     }
 
@@ -43,6 +58,7 @@ public class HotelService {
                         .roomNumber(r.getRoomNumber())
                         .type(r.getType().name())
                         .price(r.getPrice())
+                        .capacity(r.getCapacity())
                         .description(r.getDescription())
                         .status(r.getStatus())
                         .build())
@@ -57,7 +73,7 @@ public class HotelService {
                 .description(hotel.getDescription())
                 .status(hotel.getStatus())
                 .averageRating(hotel.getAverageRating())
-                .images(Collections.emptyList()) // Mock empty list
+                .images(toImages(hotel.getImageUrl()))
                 .rooms(rooms)
                 .build();
     }
@@ -100,6 +116,16 @@ public class HotelService {
         hotelRepository.delete(hotel);
     }
 
+    @Transactional
+    public String uploadImage(Long hotelId, MultipartFile file) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+        String imageUrl = fileStorageService.storeImage(file, "hotels");
+        hotel.setImageUrl(imageUrl);
+        hotelRepository.save(hotel);
+        return imageUrl;
+    }
+
     private HotelResponseDTO mapToHotelResponse(Hotel hotel) {
         return HotelResponseDTO.builder()
                 .id(hotel.getId())
@@ -110,6 +136,15 @@ public class HotelService {
                 .description(hotel.getDescription())
                 .status(hotel.getStatus())
                 .averageRating(hotel.getAverageRating())
+                .price(roomRepository
+                        .findFirstByHotelIdAndStatusOrderByPriceAsc(hotel.getId(), "active")
+                        .map(room -> room.getPrice()).orElse(null))
+                .images(toImages(hotel.getImageUrl()))
                 .build();
+    }
+
+    private List<String> toImages(String imageUrl) {
+        return imageUrl == null || imageUrl.isBlank()
+                ? Collections.emptyList() : Collections.singletonList(imageUrl);
     }
 }

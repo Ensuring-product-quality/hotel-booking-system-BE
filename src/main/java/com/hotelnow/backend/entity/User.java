@@ -33,6 +33,9 @@ public class User {
     @Column(nullable = false)
     private String status; // "active", "inactive"
 
+    @Column(length = 500)
+    private String avatarUrl;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

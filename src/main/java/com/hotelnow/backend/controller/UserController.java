@@ -1,28 +1,23 @@
 package com.hotelnow.backend.controller;
 
+import java.util.Set;
+
 import com.hotelnow.backend.dto.*;
 import com.hotelnow.backend.service.UserService;
+import com.hotelnow.backend.util.PageableFactory;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
-
-    @Value("${app.base-url}")
-    private String baseUrl;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -38,9 +33,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "username,asc") String sort) {
 
-        String[] sortParams = sort.split(",");
-        Sort sorting = Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]);
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "username", "email", "role", "status", "createdAt", "updatedAt"));
 
         PageResponse<UserResponseDTO> data = userService.searchUsers(role, status, keyword, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
@@ -80,8 +73,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<String>> uploadAvatar(
             @PathVariable Long userId,
             @RequestParam("file") MultipartFile file) {
-        String mockAvatarUrl = baseUrl + "/static/avatars/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
-        String savedUrl = userService.uploadAvatar(userId, mockAvatarUrl);
+        String savedUrl = userService.uploadAvatar(userId, file);
         return ResponseEntity.ok(ApiResponse.success("Avatar uploaded successfully", savedUrl, HttpStatus.OK.value()));
     }
 

@@ -1,11 +1,12 @@
 package com.hotelnow.backend.controller;
 
+import java.util.Set;
+
 import com.hotelnow.backend.dto.*;
 import com.hotelnow.backend.service.PaymentService;
+import com.hotelnow.backend.util.PageableFactory;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,9 +39,7 @@ public class PaymentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,desc") String sort) {
 
-        String[] sortParams = sort.split(",");
-        Sort sorting = Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]);
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "amount", "status", "paymentMethod", "paymentDate", "createdAt"));
 
         PageResponse<PaymentResponseDTO> data = paymentService.searchPayments(userId, bookingId, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));

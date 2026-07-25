@@ -15,6 +15,8 @@ public class BookingDetailDTO {
     private Long id;
     private UserResponseDTO user;
     private RoomResponseDTO room;
+    private Long hotelId;
+    private String hotelName;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private Integer guests;
