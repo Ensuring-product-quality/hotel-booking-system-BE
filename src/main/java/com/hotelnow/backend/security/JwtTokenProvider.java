@@ -29,31 +29,34 @@ public class JwtTokenProvider {
     }
 
     public String generateAccessToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails.getUsername(), TokenType.ACCESS, expiration);
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateToken(userPrincipal.getUser(), TokenType.ACCESS, expiration);
     }
 
     public String generateRefreshToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails.getUsername(), TokenType.REFRESH, refreshExpiration);
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateToken(userPrincipal.getUser(), TokenType.REFRESH, refreshExpiration);
     }
 
-    public String generateAccessToken(String username) {
-        return generateToken(username, TokenType.ACCESS, expiration);
+    public String generateAccessToken(com.hotelnow.backend.entity.User user) {
+        return generateToken(user, TokenType.ACCESS, expiration);
     }
 
-    public String generateRefreshToken(String username) {
-        return generateToken(username, TokenType.REFRESH, refreshExpiration);
+    public String generateRefreshToken(com.hotelnow.backend.entity.User user) {
+        return generateToken(user, TokenType.REFRESH, refreshExpiration);
     }
 
-    private String generateToken(String username, TokenType type, long expiryTime) {
+    private String generateToken(com.hotelnow.backend.entity.User user, TokenType type, long expiryTime) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiryTime);
 
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(user.getUsername())
                 .setId(UUID.randomUUID().toString())
                 .claim("type", type.name())
+                .claim("userId", user.getId())
+                .claim("email", user.getEmail())
+                .claim("role", "ROLE_" + user.getRole().name())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)

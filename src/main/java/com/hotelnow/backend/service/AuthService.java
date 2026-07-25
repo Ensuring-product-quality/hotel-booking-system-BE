@@ -50,6 +50,7 @@ public class AuthService {
             throw new BadRequestException("Email is already registered");
         }
 
+        // Standard user role is CUSTOMER, starting with active status for development testing
         User user = User.builder()
                 .username(registerDTO.getUsername())
                 .password(passwordEncoder.encode(registerDTO.getPassword()))
@@ -68,6 +69,7 @@ public class AuthService {
     @Transactional
     public TokenResponseDTO login(LoginRequestDTO loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername())
+                .or(() -> userRepository.findByEmail(loginRequest.getUsername()))
                 .orElseThrow(() -> new BadRequestException("Invalid username or password"));
 
         if (!"active".equalsIgnoreCase(user.getStatus())) {
@@ -76,7 +78,7 @@ public class AuthService {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
+                        user.getUsername(),
                         loginRequest.getPassword()
                 )
         );
@@ -112,8 +114,8 @@ public class AuthService {
         }
 
         revoke(storedToken);
-        String newAccessToken = tokenProvider.generateAccessToken(username);
-        String newRefreshToken = tokenProvider.generateRefreshToken(username);
+        String newAccessToken = tokenProvider.generateAccessToken(user);
+        String newRefreshToken = tokenProvider.generateRefreshToken(user);
         saveRefreshToken(newRefreshToken, user);
 
         return new TokenResponseDTO(newAccessToken, newRefreshToken, mapToUserResponse(user));
