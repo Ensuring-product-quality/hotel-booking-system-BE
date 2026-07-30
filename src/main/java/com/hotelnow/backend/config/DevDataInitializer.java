@@ -54,36 +54,55 @@ public class DevDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.count() > 0 || hotelRepository.count() > 0) {
+        // Ensure default staff user exists
+        if (!userRepository.existsByUsername("staff")) {
+            User staff = User.builder()
+                    .username("staff")
+                    .password(passwordEncoder.encode("password"))
+                    .email("staff@hotelnow.com")
+                    .role(Role.STAFF)
+                    .status("active")
+                    .build();
+            userRepository.save(staff);
+        }
+
+        if (userRepository.count() > 0 && hotelRepository.count() > 0) {
             return; // Data already initialized
         }
 
-        // 1. Create Default Users
-        User customer = User.builder()
-                .username("customer")
-                .password(passwordEncoder.encode("password"))
-                .email("customer@hotelnow.com")
-                .role(Role.CUSTOMER)
-                .status("active")
-                .build();
+        // 1. Create Default Users if missing
+        if (!userRepository.existsByUsername("customer")) {
+            User customer = User.builder()
+                    .username("customer")
+                    .password(passwordEncoder.encode("password"))
+                    .email("customer@hotelnow.com")
+                    .role(Role.CUSTOMER)
+                    .status("active")
+                    .build();
+            userRepository.save(customer);
+        }
 
-        User manager = User.builder()
-                .username("manager")
-                .password(passwordEncoder.encode("password"))
-                .email("manager@hotelnow.com")
-                .role(Role.MANAGER)
-                .status("active")
-                .build();
+        if (!userRepository.existsByUsername("manager")) {
+            User manager = User.builder()
+                    .username("manager")
+                    .password(passwordEncoder.encode("password"))
+                    .email("manager@hotelnow.com")
+                    .role(Role.MANAGER)
+                    .status("active")
+                    .build();
+            userRepository.save(manager);
+        }
 
-        User admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder.encode("password"))
-                .email("admin@hotelnow.com")
-                .role(Role.ADMIN)
-                .status("active")
-                .build();
-
-        userRepository.saveAll(Arrays.asList(customer, manager, admin));
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = User.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("password"))
+                    .email("admin@hotelnow.com")
+                    .role(Role.ADMIN)
+                    .status("active")
+                    .build();
+            userRepository.save(admin);
+        }
 
         // 2. Create Default Hotels representing all 12 destinations on UI
         // MIỀN BẮC
