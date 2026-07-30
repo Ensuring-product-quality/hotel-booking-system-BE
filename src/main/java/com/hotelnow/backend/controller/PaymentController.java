@@ -23,7 +23,7 @@ public class PaymentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'MANAGER', 'STAFF')")
     public ResponseEntity<ApiResponse<PaymentResponseDTO>> processPayment(@Valid @RequestBody PaymentCreateDTO createDTO) {
         PaymentResponseDTO data = paymentService.processPayment(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)

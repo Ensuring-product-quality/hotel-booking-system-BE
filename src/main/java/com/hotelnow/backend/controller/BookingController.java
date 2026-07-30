@@ -22,7 +22,7 @@ public class BookingController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'MANAGER', 'STAFF')")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> createBooking(
             @Valid @RequestBody BookingCreateDTO createDTO) {
         BookingResponseDTO data = bookingService.createBooking(createDTO);
