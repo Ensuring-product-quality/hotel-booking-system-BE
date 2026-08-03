@@ -43,15 +43,15 @@ public class ReviewService {
         User user = currentUserService.requireCurrentUser();
         Hotel hotel = createDTO.getHotelId() == null ? null
                 : hotelRepository.findById(createDTO.getHotelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin khách sạn"));
         Room room = createDTO.getRoomId() == null ? null
                 : roomRepository.findById(createDTO.getRoomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
         if (room != null && hotel == null) {
             hotel = room.getHotel();
         }
         if (hotel == null) {
-            throw new BadRequestException("Either hotelId or roomId must be provided");
+            throw new BadRequestException("Vui lòng cung cấp ID khách sạn hoặc ID phòng");
         }
 
         Hotel targetHotel = hotel;
@@ -65,7 +65,7 @@ public class ReviewService {
                         ? booking.getRoom().getId().equals(targetRoom.getId())
                         : booking.getRoom().getHotel().getId().equals(targetHotel.getId()));
         if (!eligible) {
-            throw new BadRequestException("You can only review after completing a stay");
+            throw new BadRequestException("Bạn chỉ có thể gửi đánh giá sau khi đã hoàn thành lưu trú tại khách sạn");
         }
 
         Review saved = reviewRepository.save(Review.builder()
@@ -87,7 +87,7 @@ public class ReviewService {
         } else if (hotelId != null) {
             reviews = reviewRepository.findByHotelId(hotelId);
         } else {
-            throw new BadRequestException("hotelId or roomId is required");
+            throw new BadRequestException("Vui lòng chọn ID khách sạn hoặc ID phòng");
         }
         return reviews.stream().map(this::mapToReviewResponse).toList();
     }
@@ -116,7 +116,7 @@ public class ReviewService {
 
     private Review findOwnedReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đánh giá"));
         User current = currentUserService.requireCurrentUser();
         if (!review.getUser().getId().equals(current.getId()) && !currentUserService.isAdmin(current)) {
             throw new AccessDeniedException("You cannot modify another user's review");

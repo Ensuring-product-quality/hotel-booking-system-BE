@@ -10,6 +10,6 @@ public class UserUpdateDTO {
     @Email
     private String email;
 
-    @NotBlank(message = "Status is required")
+    @NotBlank(message = "Trạng thái không được để trống")
     private String status; // "active", "inactive"
 }

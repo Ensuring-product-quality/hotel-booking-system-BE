@@ -46,19 +46,19 @@ public class BookingService {
         User user = currentUserService.requireCurrentUser();
 
         Room room = roomRepository.findByIdForUpdate(createDTO.getRoomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
         if (!"active".equalsIgnoreCase(room.getStatus())) {
-            throw new BadRequestException("Room is not active for booking");
+            throw new BadRequestException("Phòng hiện không ở trạng thái sẵn sàng để đặt");
         }
         if (createDTO.getGuests() > room.getCapacity()) {
-            throw new BadRequestException("Guest count exceeds room capacity of " + room.getCapacity());
+            throw new BadRequestException("Số lượng khách vượt quá sức chứa tối đa của phòng (" + room.getCapacity() + " người)");
         }
 
         List<BookingStatus> activeStatuses =
                 Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
         if (bookingRepository.hasOverlappingBookings(
                 room.getId(), createDTO.getCheckInDate(), createDTO.getCheckOutDate(), activeStatuses)) {
-            throw new BookingConflictException("The room is already booked for the selected dates");
+            throw new BookingConflictException("Phòng đã được đặt trong khoảng thời gian bạn chọn");
         }
 
         Booking booking = Booking.builder()
@@ -92,9 +92,9 @@ public class BookingService {
     @Transactional(readOnly = true)
     public BookingDetailDTO publicLookup(Long bookingId, String email) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt phòng"));
         if (email == null || !booking.getUser().getEmail().equalsIgnoreCase(email.trim())) {
-            throw new ResourceNotFoundException("Booking not found");
+            throw new ResourceNotFoundException("Không tìm thấy đơn đặt phòng");
         }
         return mapToBookingDetail(booking);
     }
@@ -105,13 +105,13 @@ public class BookingService {
         User current = currentUserService.requireCurrentUser();
 
         if (!currentUserService.isStaff(current) && booking.getStatus() != BookingStatus.PENDING_PAYMENT) {
-            throw new BadRequestException("Customers can only edit bookings awaiting payment");
+            throw new BadRequestException("Khách hàng chỉ có thể chỉnh sửa đơn đặt phòng đang chờ thanh toán");
         }
 
         if (!currentUserService.isStaff(current)
                 && updateDTO.getStatus() != null
                 && !updateDTO.getStatus().isBlank()) {
-            throw new BadRequestException("Customers cannot change booking status");
+            throw new BadRequestException("Khách hàng không thể tự thay đổi trạng thái đơn đặt phòng");
         }
 
         LocalDate nextCheckIn = updateDTO.getCheckInDate() != null
@@ -127,19 +127,19 @@ public class BookingService {
         boolean guestsChanged = !booking.getGuests().equals(nextGuests);
         if (datesChanged || guestsChanged) {
             Room room = roomRepository.findByIdForUpdate(booking.getRoom().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
             if (!"active".equalsIgnoreCase(room.getStatus())) {
-                throw new BadRequestException("Room is not active for booking");
+                throw new BadRequestException("Phòng hiện không ở trạng thái sẵn sàng để đặt");
             }
             if (nextGuests > room.getCapacity()) {
-                throw new BadRequestException("Guest count exceeds room capacity of " + room.getCapacity());
+                throw new BadRequestException("Số lượng khách vượt quá sức chứa tối đa của phòng (" + room.getCapacity() + " người)");
             }
 
             List<BookingStatus> activeStatuses =
                     Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
             if (bookingRepository.hasOverlappingBookingsExcluding(
                     bookingId, room.getId(), nextCheckIn, nextCheckOut, activeStatuses)) {
-                throw new BookingConflictException("The room is already booked for the selected dates");
+                throw new BookingConflictException("Phòng đã được đặt trong khoảng thời gian bạn chọn");
             }
             if (datesChanged) {
                 booking.setTotalPrice(calculateTotal(room, nextCheckIn, nextCheckOut));
@@ -164,10 +164,10 @@ public class BookingService {
     public void cancelBooking(Long bookingId) {
         Booking booking = findAccessibleBooking(bookingId);
         if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new BadRequestException("Booking is already cancelled");
+            throw new BadRequestException("Đơn đặt phòng này đã bị hủy trước đó");
         }
         if (booking.getStatus() == BookingStatus.COMPLETED) {
-            throw new BadRequestException("Completed bookings cannot be cancelled");
+            throw new BadRequestException("Không thể hủy đơn đặt phòng đã hoàn thành lưu trú");
         }
 
         paymentRepository.findByBookingId(bookingId).ifPresent(payment -> {
@@ -184,7 +184,7 @@ public class BookingService {
     public boolean checkAvailability(Long roomId, LocalDate checkIn, LocalDate checkOut) {
         validateDates(checkIn, checkOut);
         roomRepository.findById(roomId)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
         List<BookingStatus> activeStatuses =
                 Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
         return !bookingRepository.hasOverlappingBookings(roomId, checkIn, checkOut, activeStatuses);
@@ -200,17 +200,17 @@ public class BookingService {
 
     private Booking findAccessibleBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt phòng"));
         User current = currentUserService.requireCurrentUser();
         if (!booking.getUser().getId().equals(current.getId()) && !currentUserService.isStaff(current)) {
-            throw new AccessDeniedException("You cannot access another user's booking");
+            throw new AccessDeniedException("Bạn không có quyền truy cập đơn đặt phòng của người dùng khác");
         }
         return booking;
     }
 
     private void validateDates(LocalDate checkIn, LocalDate checkOut) {
         if (checkIn == null || checkOut == null || !checkOut.isAfter(checkIn)) {
-            throw new BadRequestException("Check-out date must be after check-in date");
+            throw new BadRequestException("Ngày trả phòng (Check-out) phải sau ngày nhận phòng (Check-in)");
         }
     }
 
@@ -232,7 +232,7 @@ public class BookingService {
         try {
             return BookingStatus.valueOf(value.toUpperCase());
         } catch (RuntimeException ex) {
-            throw new BadRequestException("Invalid booking status");
+            throw new BadRequestException("Trạng thái đơn đặt phòng không hợp lệ");
         }
     }
 
@@ -246,7 +246,7 @@ public class BookingService {
             case CANCELLED, COMPLETED -> false;
         };
         if (!valid) {
-            throw new BadRequestException("Invalid booking status transition: " + current + " -> " + next);
+            throw new BadRequestException("Chuyển đổi trạng thái đơn không hợp lệ: " + current + " -> " + next);
         }
     }
 

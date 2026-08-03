@@ -56,7 +56,7 @@ public class RoomController {
     public ResponseEntity<ApiResponse<RoomResponseDTO>> createRoom(@Valid @RequestBody RoomCreateDTO createDTO) {
         RoomResponseDTO data = roomService.createRoom(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Room created successfully", data, HttpStatus.CREATED.value()));
+                .body(ApiResponse.success("Tạo loại phòng thành công", data, HttpStatus.CREATED.value()));
     }
 
     @PutMapping("/{roomId}")
@@ -65,7 +65,7 @@ public class RoomController {
             @PathVariable Long roomId,
             @Valid @RequestBody RoomUpdateDTO updateDTO) {
         RoomResponseDTO data = roomService.updateRoom(roomId, updateDTO);
-        return ResponseEntity.ok(ApiResponse.success("Room updated successfully", data, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin phòng thành công", data, HttpStatus.OK.value()));
     }
 
     @DeleteMapping("/{roomId}")
@@ -73,6 +73,6 @@ public class RoomController {
     public ResponseEntity<ApiResponse<Void>> deleteRoom(@PathVariable Long roomId) {
         roomService.deleteRoom(roomId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success("Room deleted successfully", null, HttpStatus.NO_CONTENT.value()));
+                .body(ApiResponse.success("Xóa loại phòng thành công", null, HttpStatus.NO_CONTENT.value()));
     }
 }

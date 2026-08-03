@@ -39,7 +39,7 @@ public class NotificationController {
     @PostMapping("/{notificationId}/mark-as-read")
     public ResponseEntity<ApiResponse<Void>> markAsRead(@PathVariable Long notificationId) {
         notificationService.markAsRead(notificationId);
-        return ResponseEntity.ok(ApiResponse.success("Notification marked as read", null, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Đã đánh dấu thông báo là đã đọc", null, HttpStatus.OK.value()));
     }
 
     @PostMapping("/mark-all-as-read")

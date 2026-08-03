@@ -61,7 +61,7 @@ public class RoomService {
     @Transactional
     public RoomResponseDTO createRoom(RoomCreateDTO dto) {
         Hotel hotel = hotelRepository.findById(dto.getHotelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel associated not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách sạn tương ứng"));
         String number = dto.getRoomNumber().trim();
         if (roomRepository.existsByHotelIdAndRoomNumberIgnoreCase(hotel.getId(), number)) {
             throw new BadRequestException("Room number already exists in this hotel");
@@ -102,7 +102,7 @@ public class RoomService {
 
     private Room findRoom(Long id) {
         return roomRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
     }
 
     private RoomType parseType(String value) {
@@ -119,11 +119,11 @@ public class RoomService {
             if (optional) {
                 return null;
             }
-            throw new BadRequestException("Status is required");
+            throw new BadRequestException("Trạng thái không được để trống");
         }
         String status = value.trim().toLowerCase();
         if (!status.equals("active") && !status.equals("inactive")) {
-            throw new BadRequestException("Status must be active or inactive");
+            throw new BadRequestException("Trạng thái phải là active hoặc inactive");
         }
         return status;
     }

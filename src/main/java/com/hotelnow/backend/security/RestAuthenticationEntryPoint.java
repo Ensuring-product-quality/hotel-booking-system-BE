@@ -32,7 +32,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         objectMapper.writeValue(
                 response.getOutputStream(),
                 ApiResponse.error(
-                        "Authentication is required",
+                        "Yêu cầu xác thực tài khoản",
                         HttpStatus.UNAUTHORIZED.value()));
     }
 }

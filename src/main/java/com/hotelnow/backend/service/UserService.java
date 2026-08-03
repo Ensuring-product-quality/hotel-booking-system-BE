@@ -83,10 +83,10 @@ public class UserService {
     @Transactional
     public UserResponseDTO createUser(UserCreateDTO createDTO) {
         if (userRepository.existsByUsername(createDTO.getUsername())) {
-            throw new BadRequestException("Username is already taken");
+            throw new BadRequestException("Tên đăng nhập này đã được sử dụng");
         }
         if (userRepository.existsByEmail(createDTO.getEmail())) {
-            throw new BadRequestException("Email is already registered");
+            throw new BadRequestException("Email này đã được đăng ký tài khoản");
         }
         User user = User.builder()
                 .username(createDTO.getUsername())
@@ -105,7 +105,7 @@ public class UserService {
         User user = findUser(userId);
         if (!user.getEmail().equalsIgnoreCase(updateDTO.getEmail())
                 && userRepository.existsByEmail(updateDTO.getEmail())) {
-            throw new BadRequestException("Email is already in use");
+            throw new BadRequestException("Email này đã được sử dụng bởi tài khoản khác");
         }
         user.setEmail(updateDTO.getEmail());
         if (currentUserService.isManagement(current)) {
@@ -128,7 +128,7 @@ public class UserService {
         currentUserService.requireSelfOrAdmin(userId);
         User user = findUser(userId);
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new BadRequestException("Incorrect old password");
+            throw new BadRequestException("Mật khẩu cũ không chính xác");
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -146,7 +146,7 @@ public class UserService {
 
     private User findUser(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
     }
 
     private Role parseRole(String value) {
@@ -157,7 +157,7 @@ public class UserService {
         try {
             return Role.valueOf(value.toUpperCase());
         } catch (RuntimeException ex) {
-            throw new BadRequestException("Invalid role");
+            throw new BadRequestException("Vai trò người dùng không hợp lệ");
         }
     }
 
@@ -166,11 +166,11 @@ public class UserService {
             if (optional) {
                 return null;
             }
-            throw new BadRequestException("Status is required");
+            throw new BadRequestException("Trạng thái không được để trống");
         }
         String status = value.trim().toLowerCase();
         if (!status.equals("active") && !status.equals("inactive")) {
-            throw new BadRequestException("Status must be active or inactive");
+            throw new BadRequestException("Trạng thái phải là active hoặc inactive");
         }
         return status;
     }

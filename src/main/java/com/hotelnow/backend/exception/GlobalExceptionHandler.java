@@ -36,13 +36,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+                .body(ApiResponse.error("Tên đăng nhập hoặc mật khẩu không chính xác", HttpStatus.UNAUTHORIZED.value()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("Access denied: " + ex.getMessage(), HttpStatus.FORBIDDEN.value()));
+                .body(ApiResponse.error("Từ chối truy cập: " + ex.getMessage(), HttpStatus.FORBIDDEN.value()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
 
         ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
                 .success(false)
-                .message("Validation failed")
+                .message("Dữ liệu đầu vào không hợp lệ")
                 .timestamp(java.time.OffsetDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .data(errors)
@@ -68,6 +68,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
+                .body(ApiResponse.error("Đã xảy ra lỗi không xác định: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 }

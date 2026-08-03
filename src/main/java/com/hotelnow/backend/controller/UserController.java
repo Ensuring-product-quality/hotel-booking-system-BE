@@ -50,7 +50,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(@Valid @RequestBody UserCreateDTO createDTO) {
         UserResponseDTO data = userService.createUser(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("User created successfully", data, HttpStatus.CREATED.value()));
+                .body(ApiResponse.success("Tạo tài khoản người dùng thành công", data, HttpStatus.CREATED.value()));
     }
 
     @PutMapping("/{userId}")
@@ -58,7 +58,7 @@ public class UserController {
             @PathVariable Long userId,
             @Valid @RequestBody UserUpdateDTO updateDTO) {
         UserResponseDTO data = userService.updateUser(userId, updateDTO);
-        return ResponseEntity.ok(ApiResponse.success("User updated successfully", data, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin người dùng thành công", data, HttpStatus.OK.value()));
     }
 
     @DeleteMapping("/{userId}")
@@ -66,7 +66,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success("User deleted successfully", null, HttpStatus.NO_CONTENT.value()));
+                .body(ApiResponse.success("Xóa tài khoản người dùng thành công", null, HttpStatus.NO_CONTENT.value()));
     }
 
     @PutMapping("/{userId}/avatar")
@@ -74,7 +74,7 @@ public class UserController {
             @PathVariable Long userId,
             @RequestParam("file") MultipartFile file) {
         String savedUrl = userService.uploadAvatar(userId, file);
-        return ResponseEntity.ok(ApiResponse.success("Avatar uploaded successfully", savedUrl, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Tải lên ảnh đại diện thành công", savedUrl, HttpStatus.OK.value()));
     }
 
     @PostMapping("/{userId}/change-password")
@@ -82,6 +82,6 @@ public class UserController {
             @PathVariable Long userId,
             @Valid @RequestBody ChangePasswordRequestDTO changePasswordDTO) {
         userService.changePassword(userId, changePasswordDTO);
-        return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công", null, HttpStatus.OK.value()));
     }
 }

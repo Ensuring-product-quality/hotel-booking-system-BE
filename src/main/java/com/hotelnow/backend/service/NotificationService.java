@@ -39,7 +39,7 @@ public class NotificationService {
     @Transactional
     public void markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông báo"));
         User current = currentUserService.requireCurrentUser();
         if (!notification.getUser().getId().equals(current.getId())) {
             throw new AccessDeniedException("You cannot modify another user's notification");

@@ -28,7 +28,7 @@ public class BookingController {
         BookingResponseDTO data = bookingService.createBooking(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
-                        "Booking placed. Please complete payment within 15 minutes.",
+                        "Đặt phòng thành công. Vui lòng hoàn tất thanh toán trong vòng 15 phút.",
                         data,
                         HttpStatus.CREATED.value()));
     }
@@ -61,7 +61,7 @@ public class BookingController {
     @GetMapping("/{bookingId}/payment-status")
     public ResponseEntity<ApiResponse<String>> getPaymentStatus(@PathVariable Long bookingId) {
         return ResponseEntity.ok(ApiResponse.success(
-                "Payment status",
+                "Trạng thái thanh toán",
                 bookingService.getPaymentStatus(bookingId),
                 HttpStatus.OK.value()));
     }
@@ -71,7 +71,7 @@ public class BookingController {
             @PathVariable Long bookingId,
             @Valid @RequestBody BookingUpdateDTO updateDTO) {
         return ResponseEntity.ok(ApiResponse.success(
-                "Booking updated successfully",
+                "Cập nhật đơn đặt phòng thành công",
                 bookingService.updateBooking(bookingId, updateDTO),
                 HttpStatus.OK.value()));
     }

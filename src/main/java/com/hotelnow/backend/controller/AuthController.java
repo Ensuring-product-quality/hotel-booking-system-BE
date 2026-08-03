@@ -21,36 +21,36 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> register(@Valid @RequestBody UserRegisterDTO registerDTO) {
         UserResponseDTO data = authService.register(registerDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Registration successful", data, HttpStatus.CREATED.value()));
+                .body(ApiResponse.success("Đăng ký tài khoản thành công", data, HttpStatus.CREATED.value()));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<TokenResponseDTO>> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         TokenResponseDTO data = authService.login(loginRequest);
-        return ResponseEntity.ok(ApiResponse.success("Login successful", data, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Đăng nhập thành công", data, HttpStatus.OK.value()));
     }
 
     @PostMapping("/verify-email")
     public ResponseEntity<ApiResponse<Void>> verifyEmail(@Valid @RequestBody VerifyEmailRequestDTO request) {
         authService.verifyEmail(request.getToken());
-        return ResponseEntity.ok(ApiResponse.success("Email verified successfully", null, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Xác thực email thành công", null, HttpStatus.OK.value()));
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<TokenResponseDTO>> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO request) {
         TokenResponseDTO data = authService.refreshToken(request.getRefreshToken());
-        return ResponseEntity.ok(ApiResponse.success("Token refreshed successfully", data, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Làm mới phiên đăng nhập thành công", data, HttpStatus.OK.value()));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshTokenRequestDTO request) {
         authService.logout(request.getRefreshToken());
-        return ResponseEntity.ok(ApiResponse.success("Logout successful", null, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công", null, HttpStatus.OK.value()));
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
         authService.forgotPassword(request.getEmail());
-        return ResponseEntity.ok(ApiResponse.success("Password reset instructions sent to your email", null, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn", null, HttpStatus.OK.value()));
     }
 }

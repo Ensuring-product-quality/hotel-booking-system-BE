@@ -66,7 +66,7 @@ public class HotelController {
     public ResponseEntity<ApiResponse<HotelResponseDTO>> createHotel(@Valid @RequestBody HotelCreateDTO createDTO) {
         HotelResponseDTO data = hotelService.createHotel(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Hotel created successfully", data, HttpStatus.CREATED.value()));
+                .body(ApiResponse.success("Tạo mới khách sạn thành công", data, HttpStatus.CREATED.value()));
     }
 
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
@@ -75,7 +75,7 @@ public class HotelController {
             @PathVariable Long hotelId,
             @Valid @RequestBody HotelCreateDTO updateDTO) {
         HotelResponseDTO data = hotelService.updateHotel(hotelId, updateDTO);
-        return ResponseEntity.ok(ApiResponse.success("Hotel updated successfully", data, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin khách sạn thành công", data, HttpStatus.OK.value()));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -83,7 +83,7 @@ public class HotelController {
     public ResponseEntity<ApiResponse<Void>> deleteHotel(@PathVariable Long hotelId) {
         hotelService.deleteHotel(hotelId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success("Hotel deleted successfully", null, HttpStatus.NO_CONTENT.value()));
+                .body(ApiResponse.success("Xóa khách sạn thành công", null, HttpStatus.NO_CONTENT.value()));
     }
 
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
@@ -92,6 +92,6 @@ public class HotelController {
             @PathVariable Long hotelId,
             @RequestParam("file") MultipartFile file) {
         String imageUrl = hotelService.uploadImage(hotelId, file);
-        return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", imageUrl, HttpStatus.OK.value()));
+        return ResponseEntity.ok(ApiResponse.success("Tải lên hình ảnh thành công", imageUrl, HttpStatus.OK.value()));
     }
 }

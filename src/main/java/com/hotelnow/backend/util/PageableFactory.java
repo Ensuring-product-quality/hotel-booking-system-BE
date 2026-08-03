@@ -17,27 +17,27 @@ public final class PageableFactory {
             String sort,
             Set<String> allowedFields) {
         if (page < 0) {
-            throw new BadRequestException("Page must be zero or greater");
+            throw new BadRequestException("Trang hiển thị phải từ 0 trở lên");
         }
         if (size < 1 || size > 100) {
-            throw new BadRequestException("Size must be between 1 and 100");
+            throw new BadRequestException("Số lượng phần tử trên trang phải từ 1 đến 100");
         }
 
         String[] parts = sort == null ? new String[0] : sort.split(",", -1);
         if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
-            throw new BadRequestException("Sort must use the format field,asc or field,desc");
+            throw new BadRequestException("Cấu trúc sắp xếp phải theo định dạng trường,asc hoặc trường,desc");
         }
 
         String field = parts[0].trim();
         if (!allowedFields.contains(field)) {
-            throw new BadRequestException("Unsupported sort field: " + field);
+            throw new BadRequestException("Trường sắp xếp không được hỗ trợ: " + field);
         }
 
         Sort.Direction direction;
         try {
             direction = Sort.Direction.fromString(parts[1].trim());
         } catch (IllegalArgumentException exception) {
-            throw new BadRequestException("Sort direction must be asc or desc");
+            throw new BadRequestException("Chiều sắp xếp phải là asc hoặc desc");
         }
 
         return PageRequest.of(page, size, Sort.by(direction, field));

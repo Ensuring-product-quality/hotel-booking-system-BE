@@ -27,6 +27,6 @@ public class RoomCreateDTO {
 
     private String description;
 
-    @NotBlank(message = "Status is required")
+    @NotBlank(message = "Trạng thái không được để trống")
     private String status;
 }

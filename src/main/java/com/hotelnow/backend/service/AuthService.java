@@ -44,10 +44,10 @@ public class AuthService {
     @Transactional
     public UserResponseDTO register(UserRegisterDTO registerDTO) {
         if (userRepository.existsByUsername(registerDTO.getUsername())) {
-            throw new BadRequestException("Username is already taken");
+            throw new BadRequestException("Tên đăng nhập này đã được sử dụng");
         }
         if (userRepository.existsByEmail(registerDTO.getEmail())) {
-            throw new BadRequestException("Email is already registered");
+            throw new BadRequestException("Email này đã được đăng ký tài khoản");
         }
 
         // Standard user role is CUSTOMER, starting with active status for development testing
@@ -70,7 +70,7 @@ public class AuthService {
     public TokenResponseDTO login(LoginRequestDTO loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .or(() -> userRepository.findByEmail(loginRequest.getUsername()))
-                .orElseThrow(() -> new BadRequestException("Invalid username or password"));
+                .orElseThrow(() -> new BadRequestException("Tên đăng nhập hoặc mật khẩu không chính xác"));
 
         if (!"active".equalsIgnoreCase(user.getStatus())) {
             throw new BadRequestException("Account is inactive");
@@ -103,7 +103,7 @@ public class AuthService {
         RefreshToken storedToken = refreshTokenRepository.findByTokenIdAndRevokedFalse(tokenId)
                 .orElseThrow(() -> new BadRequestException("Refresh token has been revoked"));
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng"));
 
         if (!storedToken.getUser().getId().equals(user.getId())
                 || storedToken.getExpiresAt().isBefore(LocalDateTime.now())) {

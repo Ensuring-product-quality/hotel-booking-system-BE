@@ -64,7 +64,7 @@ public class FileStorageService {
         Path destination = categoryDirectory.resolve(filename).normalize();
 
         if (!destination.startsWith(categoryDirectory)) {
-            throw new BadRequestException("Invalid upload path");
+            throw new BadRequestException("Đường dẫn tải lên không hợp lệ");
         }
 
         try {
@@ -73,7 +73,7 @@ public class FileStorageService {
                 Files.copy(input, destination, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException ex) {
-            throw new BadRequestException("Could not save uploaded image");
+            throw new BadRequestException("Không thể lưu tệp hình ảnh tải lên");
         }
 
         return publicBaseUrl + "/uploads/" + safeCategory + "/" + filename;
@@ -85,32 +85,32 @@ public class FileStorageService {
 
     private void validateImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new BadRequestException("Image file is required");
+            throw new BadRequestException("Vui lòng chọn tệp hình ảnh");
         }
         if (file.getSize() > MAX_IMAGE_SIZE) {
-            throw new BadRequestException("Image must not exceed 5 MB");
+            throw new BadRequestException("Kích thước hình ảnh không được vượt quá 5MB");
         }
 
         String contentType = file.getContentType();
         if (contentType == null
                 || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase(Locale.ROOT))) {
-            throw new BadRequestException("Only JPEG, PNG, or GIF images are allowed");
+            throw new BadRequestException("Chỉ hỗ trợ tải lên ảnh định dạng JPEG, PNG hoặc GIF");
         }
 
         String expectedFormat = IMAGE_FORMATS.get(contentType.toLowerCase(Locale.ROOT));
         try (InputStream input = file.getInputStream();
              ImageInputStream imageInput = ImageIO.createImageInputStream(input)) {
             if (imageInput == null) {
-                throw new BadRequestException("Uploaded file is not a valid image");
+                throw new BadRequestException("Tệp tải lên không phải là tệp hình ảnh hợp lệ");
             }
             Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInput);
             if (!readers.hasNext()) {
-                throw new BadRequestException("Uploaded file is not a valid image");
+                throw new BadRequestException("Tệp tải lên không phải là tệp hình ảnh hợp lệ");
             }
             ImageReader reader = readers.next();
             try {
                 if (!reader.getFormatName().equalsIgnoreCase(expectedFormat)) {
-                    throw new BadRequestException("Image content does not match its content type");
+                    throw new BadRequestException("Nội dung hình ảnh không đúng định dạng khai báo");
                 }
                 reader.setInput(imageInput, true, true);
                 reader.read(0);
@@ -118,13 +118,13 @@ public class FileStorageService {
                 reader.dispose();
             }
         } catch (IOException ex) {
-            throw new BadRequestException("Could not read uploaded image");
+            throw new BadRequestException("Không thể đọc dữ liệu ảnh tải lên");
         }
     }
 
     private String normalizeCategory(String category) {
         if (category == null || !category.matches("[a-z0-9-]+")) {
-            throw new BadRequestException("Invalid upload category");
+            throw new BadRequestException("Danh mục tải lên không hợp lệ");
         }
         return category;
     }

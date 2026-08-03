@@ -53,7 +53,7 @@ public class HotelService {
     @Transactional(readOnly = true)
     public HotelDetailDTO getHotelDetail(Long hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin khách sạn"));
 
         List<RoomResponseDTO> rooms = roomRepository.findAll().stream()
                 .filter(r -> r.getHotel().getId().equals(hotelId))
@@ -107,7 +107,7 @@ public class HotelService {
     @Transactional
     public HotelResponseDTO updateHotel(Long hotelId, HotelCreateDTO updateDTO) {
         Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin khách sạn"));
 
         hotel.setName(updateDTO.getName());
         hotel.setAddress(updateDTO.getAddress());
@@ -123,14 +123,14 @@ public class HotelService {
     @Transactional
     public void deleteHotel(Long hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin khách sạn"));
         hotelRepository.delete(hotel);
     }
 
     @Transactional
     public String uploadImage(Long hotelId, MultipartFile file) {
         Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin khách sạn"));
         String imageUrl = fileStorageService.storeImage(file, "hotels");
         hotel.setImageUrl(imageUrl);
         hotelRepository.save(hotel);

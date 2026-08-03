@@ -20,7 +20,7 @@ public class CurrentUserService {
     public User requireCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
-            throw new AccessDeniedException("Authentication is required");
+            throw new AccessDeniedException("Yêu cầu xác thực tài khoản");
         }
         return principal.getUser();
     }
@@ -40,14 +40,14 @@ public class CurrentUserService {
     public void requireSelfOrStaff(Long userId) {
         User current = requireCurrentUser();
         if (!current.getId().equals(userId) && !isStaff(current)) {
-            throw new AccessDeniedException("You cannot access another user's data");
+            throw new AccessDeniedException("Bạn không có quyền truy cập dữ liệu của người dùng khác");
         }
     }
 
     public void requireSelfOrAdmin(Long userId) {
         User current = requireCurrentUser();
         if (!current.getId().equals(userId) && !isAdmin(current)) {
-            throw new AccessDeniedException("You cannot modify another user's account");
+            throw new AccessDeniedException("Bạn không có quyền chỉnh sửa tài khoản của người dùng khác");
         }
     }
 }

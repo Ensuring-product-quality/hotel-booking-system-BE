@@ -31,6 +31,6 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         objectMapper.writeValue(
                 response.getOutputStream(),
-                ApiResponse.error("Access denied", HttpStatus.FORBIDDEN.value()));
+                ApiResponse.error("Quyền truy cập bị từ chối", HttpStatus.FORBIDDEN.value()));
     }
 }

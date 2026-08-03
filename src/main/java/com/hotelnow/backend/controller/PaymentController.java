@@ -27,7 +27,7 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<PaymentResponseDTO>> processPayment(@Valid @RequestBody PaymentCreateDTO createDTO) {
         PaymentResponseDTO data = paymentService.processPayment(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Payment processed successfully", data, HttpStatus.CREATED.value()));
+                .body(ApiResponse.success("Xử lý giao dịch thanh toán thành công", data, HttpStatus.CREATED.value()));
     }
 
     @GetMapping

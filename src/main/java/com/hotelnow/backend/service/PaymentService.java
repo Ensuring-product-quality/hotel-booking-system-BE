@@ -34,23 +34,23 @@ public class PaymentService {
     @Transactional
     public PaymentResponseDTO processPayment(PaymentCreateDTO createDTO) {
         Booking booking = bookingRepository.findById(createDTO.getBookingId())
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt phòng"));
         User current = currentUserService.requireCurrentUser();
         if (!booking.getUser().getId().equals(current.getId())) {
             throw new AccessDeniedException("You cannot pay for another user's booking");
         }
         if (booking.getStatus() != BookingStatus.PENDING_PAYMENT) {
-            throw new BadRequestException("Booking status must be pending_payment to process payment");
+            throw new BadRequestException("Đơn đặt phòng phải ở trạng thái Chờ thanh toán mới có thể xử lý");
         }
         if (paymentRepository.findByBookingId(booking.getId()).isPresent()) {
-            throw new BadRequestException("This booking already has a payment");
+            throw new BadRequestException("Đơn đặt phòng này đã được thanh toán trước đó");
         }
 
         PaymentMethod method;
         try {
             method = PaymentMethod.valueOf(createDTO.getPaymentMethod().toUpperCase());
         } catch (RuntimeException ex) {
-            throw new BadRequestException("Invalid payment method. Choose credit_card, paypal, or bank_transfer");
+            throw new BadRequestException("Phương thức thanh toán không hợp lệ. Vui lòng chọn thẻ tín dụng, PayPal hoặc chuyển khoản ngân hàng");
         }
 
         Payment payment = Payment.builder()
@@ -83,7 +83,7 @@ public class PaymentService {
         try {
             return PaymentStatus.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Invalid payment status");
+            throw new BadRequestException("Trạng thái thanh toán không hợp lệ");
         }
     }
 
