@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Environment & Sensitive Document files
+.env
+.env.*
+*.docx
+*.txt
+
 ### STS ###
 .apt_generated
 .classpath
