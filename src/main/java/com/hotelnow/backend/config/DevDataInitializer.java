@@ -82,17 +82,6 @@ public class DevDataInitializer implements CommandLineRunner {
             userRepository.save(customer);
         }
 
-        if (!userRepository.existsByUsername("manager")) {
-            User manager = User.builder()
-                    .username("manager")
-                    .password(passwordEncoder.encode("password"))
-                    .email("manager@hotelnow.com")
-                    .role(Role.MANAGER)
-                    .status("active")
-                    .build();
-            userRepository.save(manager);
-        }
-
         if (!userRepository.existsByUsername("admin")) {
             User admin = User.builder()
                     .username("admin")

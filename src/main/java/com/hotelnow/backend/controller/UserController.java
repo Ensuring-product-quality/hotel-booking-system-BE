@@ -24,7 +24,7 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<ApiResponse<PageResponse<UserResponseDTO>>> getUsers(
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String status,
@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(@Valid @RequestBody UserCreateDTO createDTO) {
         UserResponseDTO data = userService.createUser(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)

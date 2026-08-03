@@ -13,9 +13,9 @@ import java.util.EnumSet;
 @Service
 public class CurrentUserService {
     private static final EnumSet<Role> STAFF_ROLES =
-            EnumSet.of(Role.STAFF, Role.MANAGER, Role.ADMIN);
+            EnumSet.of(Role.STAFF, Role.ADMIN);
     private static final EnumSet<Role> MANAGEMENT_ROLES =
-            EnumSet.of(Role.MANAGER, Role.ADMIN);
+            EnumSet.of(Role.ADMIN);
 
     public User requireCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

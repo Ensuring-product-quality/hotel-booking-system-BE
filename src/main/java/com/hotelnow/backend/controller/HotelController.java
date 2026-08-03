@@ -62,14 +62,14 @@ public class HotelController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<ApiResponse<HotelResponseDTO>> createHotel(@Valid @RequestBody HotelCreateDTO createDTO) {
         HotelResponseDTO data = hotelService.createHotel(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Hotel created successfully", data, HttpStatus.CREATED.value()));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     @PutMapping("/{hotelId}")
     public ResponseEntity<ApiResponse<HotelResponseDTO>> updateHotel(
             @PathVariable Long hotelId,
@@ -86,7 +86,7 @@ public class HotelController {
                 .body(ApiResponse.success("Hotel deleted successfully", null, HttpStatus.NO_CONTENT.value()));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     @PostMapping("/{hotelId}/images")
     public ResponseEntity<ApiResponse<String>> uploadHotelImage(
             @PathVariable Long hotelId,

@@ -20,7 +20,7 @@ public class UserCreateDTO {
     private String email;
 
     @NotBlank(message = "Role is required")
-    private String role; // "ADMIN", "MANAGER", "CUSTOMER", "STAFF"
+    private String role; // "ADMIN", "CUSTOMER", "STAFF"
 
     @NotBlank(message = "Status is required")
     private String status; // "active", "inactive"
