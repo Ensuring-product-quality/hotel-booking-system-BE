@@ -110,6 +110,9 @@ public class UserService {
         user.setEmail(updateDTO.getEmail());
         if (currentUserService.isManagement(current)) {
             user.setStatus(normalizeStatus(updateDTO.getStatus(), false));
+            if (updateDTO.getRole() != null && !updateDTO.getRole().isBlank()) {
+                user.setRole(parseRequiredRole(updateDTO.getRole()));
+            }
         }
         return mapToUserResponse(userRepository.save(user));
     }
