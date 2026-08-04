@@ -14,6 +14,8 @@ public class UserDetailDTO {
     private Long id;
     private String username;
     private String email;
+    private String fullName;
+    private String phone;
     private String role;
     private String status;
     private String avatarUrl;

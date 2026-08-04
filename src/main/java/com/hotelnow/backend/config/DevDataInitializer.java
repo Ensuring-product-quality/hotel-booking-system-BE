@@ -60,6 +60,8 @@ public class DevDataInitializer implements CommandLineRunner {
                     .username("staff")
                     .password(passwordEncoder.encode("password"))
                     .email("staff@hotelnow.com")
+                    .fullName("Phạm Lễ Tân")
+                    .phone("0933445566")
                     .role(Role.STAFF)
                     .status("active")
                     .build();
@@ -76,6 +78,8 @@ public class DevDataInitializer implements CommandLineRunner {
                     .username("customer")
                     .password(passwordEncoder.encode("password"))
                     .email("customer@hotelnow.com")
+                    .fullName("Nguyễn Văn An")
+                    .phone("0912345678")
                     .role(Role.CUSTOMER)
                     .status("active")
                     .build();
@@ -87,6 +91,8 @@ public class DevDataInitializer implements CommandLineRunner {
                     .username("admin")
                     .password(passwordEncoder.encode("password"))
                     .email("admin@hotelnow.com")
+                    .fullName("Lê Quản Trị")
+                    .phone("0909090909")
                     .role(Role.ADMIN)
                     .status("active")
                     .build();

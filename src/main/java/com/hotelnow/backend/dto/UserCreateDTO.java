@@ -19,6 +19,10 @@ public class UserCreateDTO {
     @Email
     private String email;
 
+    private String fullName;
+
+    private String phone;
+
     @NotBlank(message = "Role is required")
     private String role; // "ADMIN", "CUSTOMER", "STAFF"
 

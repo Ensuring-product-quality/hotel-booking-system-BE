@@ -55,6 +55,8 @@ public class AuthService {
                 .username(registerDTO.getUsername())
                 .password(passwordEncoder.encode(registerDTO.getPassword()))
                 .email(registerDTO.getEmail())
+                .fullName(registerDTO.getFullName())
+                .phone(registerDTO.getPhone())
                 .role(Role.CUSTOMER)
                 .status("active")
                 .build();
@@ -160,6 +162,8 @@ public class AuthService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
                 .role(user.getRole().name())
                 .status(user.getStatus())
                 .avatarUrl(user.getAvatarUrl())

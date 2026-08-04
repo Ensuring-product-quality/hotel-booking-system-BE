@@ -73,6 +73,8 @@ public class UserService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
                 .role(user.getRole().name())
                 .status(user.getStatus())
                 .avatarUrl(user.getAvatarUrl())
@@ -92,6 +94,8 @@ public class UserService {
                 .username(createDTO.getUsername())
                 .password(passwordEncoder.encode(createDTO.getPassword()))
                 .email(createDTO.getEmail())
+                .fullName(createDTO.getFullName())
+                .phone(createDTO.getPhone())
                 .role(parseRequiredRole(createDTO.getRole()))
                 .status(normalizeStatus(createDTO.getStatus(), false))
                 .build();
@@ -103,13 +107,23 @@ public class UserService {
         currentUserService.requireSelfOrStaff(userId);
         User current = currentUserService.requireCurrentUser();
         User user = findUser(userId);
-        if (!user.getEmail().equalsIgnoreCase(updateDTO.getEmail())
-                && userRepository.existsByEmail(updateDTO.getEmail())) {
-            throw new BadRequestException("Email này đã được sử dụng bởi tài khoản khác");
+        if (updateDTO.getEmail() != null && !updateDTO.getEmail().isBlank()) {
+            if (!user.getEmail().equalsIgnoreCase(updateDTO.getEmail())
+                    && userRepository.existsByEmail(updateDTO.getEmail())) {
+                throw new BadRequestException("Email này đã được sử dụng bởi tài khoản khác");
+            }
+            user.setEmail(updateDTO.getEmail());
         }
-        user.setEmail(updateDTO.getEmail());
+        if (updateDTO.getFullName() != null) {
+            user.setFullName(updateDTO.getFullName());
+        }
+        if (updateDTO.getPhone() != null) {
+            user.setPhone(updateDTO.getPhone());
+        }
         if (currentUserService.isManagement(current)) {
-            user.setStatus(normalizeStatus(updateDTO.getStatus(), false));
+            if (updateDTO.getStatus() != null && !updateDTO.getStatus().isBlank()) {
+                user.setStatus(normalizeStatus(updateDTO.getStatus(), false));
+            }
             if (updateDTO.getRole() != null && !updateDTO.getRole().isBlank()) {
                 user.setRole(parseRequiredRole(updateDTO.getRole()));
             }
@@ -187,6 +201,8 @@ public class UserService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
                 .role(user.getRole().name())
                 .status(user.getStatus())
                 .avatarUrl(user.getAvatarUrl())

@@ -10,7 +10,10 @@ public class UserUpdateDTO {
     @Email
     private String email;
 
-    @NotBlank(message = "Trạng thái không được để trống")
+    private String fullName;
+
+    private String phone;
+
     private String status; // "active", "inactive"
 
     private String role; // "ADMIN", "STAFF", "CUSTOMER"
