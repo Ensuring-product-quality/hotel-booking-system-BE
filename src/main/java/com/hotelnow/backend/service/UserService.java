@@ -84,18 +84,22 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO createUser(UserCreateDTO createDTO) {
-        if (userRepository.existsByUsername(createDTO.getUsername())) {
+        if (userRepository.existsByUsername(createDTO.getUsername().trim())) {
             throw new BadRequestException("Tên đăng nhập này đã được sử dụng");
         }
-        if (userRepository.existsByEmail(createDTO.getEmail())) {
+        if (userRepository.existsByEmail(createDTO.getEmail().trim())) {
             throw new BadRequestException("Email này đã được đăng ký tài khoản");
         }
+        if (createDTO.getPhone() != null && !createDTO.getPhone().isBlank()
+                && userRepository.existsByPhone(createDTO.getPhone().trim())) {
+            throw new BadRequestException("Số điện thoại này đã được đăng ký cho tài khoản khác");
+        }
         User user = User.builder()
-                .username(createDTO.getUsername())
+                .username(createDTO.getUsername().trim())
                 .password(passwordEncoder.encode(createDTO.getPassword()))
-                .email(createDTO.getEmail())
-                .fullName(createDTO.getFullName())
-                .phone(createDTO.getPhone())
+                .email(createDTO.getEmail().trim())
+                .fullName(createDTO.getFullName() != null ? createDTO.getFullName().trim() : null)
+                .phone(createDTO.getPhone() != null ? createDTO.getPhone().trim() : null)
                 .role(parseRequiredRole(createDTO.getRole()))
                 .status(normalizeStatus(createDTO.getStatus(), false))
                 .build();
@@ -108,17 +112,23 @@ public class UserService {
         User current = currentUserService.requireCurrentUser();
         User user = findUser(userId);
         if (updateDTO.getEmail() != null && !updateDTO.getEmail().isBlank()) {
-            if (!user.getEmail().equalsIgnoreCase(updateDTO.getEmail())
-                    && userRepository.existsByEmail(updateDTO.getEmail())) {
+            String newEmail = updateDTO.getEmail().trim();
+            if (!user.getEmail().equalsIgnoreCase(newEmail)
+                    && userRepository.existsByEmail(newEmail)) {
                 throw new BadRequestException("Email này đã được sử dụng bởi tài khoản khác");
             }
-            user.setEmail(updateDTO.getEmail());
+            user.setEmail(newEmail);
         }
         if (updateDTO.getFullName() != null) {
-            user.setFullName(updateDTO.getFullName());
+            user.setFullName(updateDTO.getFullName().trim());
         }
-        if (updateDTO.getPhone() != null) {
-            user.setPhone(updateDTO.getPhone());
+        if (updateDTO.getPhone() != null && !updateDTO.getPhone().isBlank()) {
+            String newPhone = updateDTO.getPhone().trim();
+            if ((user.getPhone() == null || !user.getPhone().equalsIgnoreCase(newPhone))
+                    && userRepository.existsByPhone(newPhone)) {
+                throw new BadRequestException("Số điện thoại này đã được sử dụng bởi tài khoản khác");
+            }
+            user.setPhone(newPhone);
         }
         if (currentUserService.isManagement(current)) {
             if (updateDTO.getStatus() != null && !updateDTO.getStatus().isBlank()) {

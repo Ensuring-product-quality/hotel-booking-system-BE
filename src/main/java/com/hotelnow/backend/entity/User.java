@@ -28,6 +28,7 @@ public class User {
 
     private String fullName;
 
+    @Column(unique = true)
     private String phone;
 
     @Enumerated(EnumType.STRING)

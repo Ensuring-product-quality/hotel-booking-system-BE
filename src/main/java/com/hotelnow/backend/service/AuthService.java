@@ -43,20 +43,24 @@ public class AuthService {
 
     @Transactional
     public UserResponseDTO register(UserRegisterDTO registerDTO) {
-        if (userRepository.existsByUsername(registerDTO.getUsername())) {
+        if (registerDTO.getUsername() != null && userRepository.existsByUsername(registerDTO.getUsername().trim())) {
             throw new BadRequestException("Tên đăng nhập này đã được sử dụng");
         }
-        if (userRepository.existsByEmail(registerDTO.getEmail())) {
+        if (registerDTO.getEmail() != null && userRepository.existsByEmail(registerDTO.getEmail().trim())) {
             throw new BadRequestException("Email này đã được đăng ký tài khoản");
+        }
+        if (registerDTO.getPhone() != null && !registerDTO.getPhone().isBlank()
+                && userRepository.existsByPhone(registerDTO.getPhone().trim())) {
+            throw new BadRequestException("Số điện thoại này đã được đăng ký cho tài khoản khác");
         }
 
         // Standard user role is CUSTOMER, starting with active status for development testing
         User user = User.builder()
-                .username(registerDTO.getUsername())
+                .username(registerDTO.getUsername() != null ? registerDTO.getUsername().trim() : null)
                 .password(passwordEncoder.encode(registerDTO.getPassword()))
-                .email(registerDTO.getEmail())
-                .fullName(registerDTO.getFullName())
-                .phone(registerDTO.getPhone())
+                .email(registerDTO.getEmail() != null ? registerDTO.getEmail().trim() : null)
+                .fullName(registerDTO.getFullName() != null ? registerDTO.getFullName().trim() : null)
+                .phone(registerDTO.getPhone() != null ? registerDTO.getPhone().trim() : null)
                 .role(Role.CUSTOMER)
                 .status("active")
                 .build();
@@ -72,6 +76,7 @@ public class AuthService {
     public TokenResponseDTO login(LoginRequestDTO loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .or(() -> userRepository.findByEmail(loginRequest.getUsername()))
+                .or(() -> userRepository.findByPhone(loginRequest.getUsername()))
                 .orElseThrow(() -> new BadRequestException("Tên đăng nhập hoặc mật khẩu không chính xác"));
 
         if (!"active".equalsIgnoreCase(user.getStatus())) {
