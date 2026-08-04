@@ -91,22 +91,36 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public BookingDetailDTO publicLookup(Long bookingId, String emailOrPhone) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt phòng với Mã ID đã nhập"));
         if (emailOrPhone == null || emailOrPhone.isBlank()) {
             throw new ResourceNotFoundException("Vui lòng nhập Email hoặc Số điện thoại để tra cứu");
         }
-        String input = emailOrPhone.trim().toLowerCase();
+
+        String input = emailOrPhone.trim();
+        boolean isEmailInput = input.contains("@");
+        String fieldLabel = isEmailInput ? "email" : "số điện thoại";
+        String notFoundMsg = "Không tìm thấy đơn đặt phòng với mã HB-" + bookingId + " và " + fieldLabel + " \"" + input + "\"";
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElse(null);
+
+        if (booking == null) {
+            throw new ResourceNotFoundException(notFoundMsg);
+        }
+
+        String search = input.toLowerCase();
         String userEmail = booking.getUser().getEmail() != null ? booking.getUser().getEmail().trim().toLowerCase() : "";
+        String userPhone = booking.getUser().getPhone() != null ? booking.getUser().getPhone().trim().toLowerCase() : "";
         String userUsername = booking.getUser().getUsername() != null ? booking.getUser().getUsername().trim().toLowerCase() : "";
 
-        boolean match = userEmail.equalsIgnoreCase(input)
-                || userUsername.equalsIgnoreCase(input)
-                || (!userEmail.isEmpty() && userEmail.contains(input))
-                || (!userUsername.isEmpty() && userUsername.contains(input));
+        boolean match = userEmail.equalsIgnoreCase(search)
+                || userPhone.equalsIgnoreCase(search)
+                || userUsername.equalsIgnoreCase(search)
+                || (!userEmail.isEmpty() && userEmail.contains(search))
+                || (!userPhone.isEmpty() && userPhone.contains(search))
+                || (!userUsername.isEmpty() && userUsername.contains(search));
 
         if (!match) {
-            throw new ResourceNotFoundException("Email hoặc số điện thoại không trùng khớp với đơn đặt phòng #" + bookingId);
+            throw new ResourceNotFoundException(notFoundMsg);
         }
         return mapToBookingDetail(booking);
     }
