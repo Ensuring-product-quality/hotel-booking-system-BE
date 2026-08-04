@@ -4,16 +4,10 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
 import java.time.LocalDate;
 
-@Data
 public class BookingCreateDTO {
-    /**
-     * Kept temporarily for backward-compatible deserialization. The backend
-     * deliberately ignores this value and uses the authenticated user.
-     */
     @Deprecated
     private Long userId;
 
@@ -31,4 +25,29 @@ public class BookingCreateDTO {
     @NotNull(message = "Guests count is required")
     @Min(value = 1, message = "At least 1 guest is required")
     private Integer guests;
+
+    public BookingCreateDTO() {}
+
+    public BookingCreateDTO(Long userId, Long roomId, LocalDate checkInDate, LocalDate checkOutDate, Integer guests) {
+        this.userId = userId;
+        this.roomId = roomId;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.guests = guests;
+    }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public Long getRoomId() { return roomId; }
+    public void setRoomId(Long roomId) { this.roomId = roomId; }
+
+    public LocalDate getCheckInDate() { return checkInDate; }
+    public void setCheckInDate(LocalDate checkInDate) { this.checkInDate = checkInDate; }
+
+    public LocalDate getCheckOutDate() { return checkOutDate; }
+    public void setCheckOutDate(LocalDate checkOutDate) { this.checkOutDate = checkOutDate; }
+
+    public Integer getGuests() { return guests; }
+    public void setGuests(Integer guests) { this.guests = guests; }
 }

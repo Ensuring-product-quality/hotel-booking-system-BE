@@ -36,10 +36,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE " +
             "(:userId IS NULL OR b.user.id = :userId) AND " +
             "(:status IS NULL OR b.status = :status) AND " +
+            "(:managerId IS NULL OR b.room.hotel.manager.id = :managerId) AND " +
             "(:keyword IS NULL OR LOWER(b.room.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.room.hotel.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Booking> searchBookings(@Param("userId") Long userId,
                                  @Param("status") BookingStatus status,
                                  @Param("keyword") String keyword,
+                                 @Param("managerId") Long managerId,
                                  Pageable pageable);
 
     List<Booking> findByStatusAndCreatedAtBefore(BookingStatus status, LocalDateTime dateTime);

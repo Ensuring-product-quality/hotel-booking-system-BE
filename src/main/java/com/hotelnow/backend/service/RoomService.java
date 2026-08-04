@@ -16,33 +16,46 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import com.hotelnow.backend.entity.User;
+import com.hotelnow.backend.entity.Role;
+import org.springframework.security.access.AccessDeniedException;
+
+import org.springframework.web.multipart.MultipartFile;
+import com.hotelnow.backend.entity.RoomImage;
+
 @Service
 public class RoomService {
 
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
     private final RoomImageRepository roomImageRepository;
+    private final CurrentUserService currentUserService;
+    private final FileStorageService fileStorageService;
 
     public RoomService(RoomRepository roomRepository,
                        HotelRepository hotelRepository,
-                       RoomImageRepository roomImageRepository) {
+                       RoomImageRepository roomImageRepository,
+                       CurrentUserService currentUserService,
+                       FileStorageService fileStorageService) {
         this.roomRepository = roomRepository;
         this.hotelRepository = hotelRepository;
         this.roomImageRepository = roomImageRepository;
+        this.currentUserService = currentUserService;
+        this.fileStorageService = fileStorageService;
     }
 
     @Transactional(readOnly = true)
     public PageResponse<RoomResponseDTO> searchRooms(
-            Long hotelId, String status, String keyword, Pageable pageable) {
+            Long hotelId, String status, String keyword, Long managerId, Pageable pageable) {
         Page<Room> page = roomRepository.searchRooms(
-                hotelId, normalizeStatus(status, true), normalize(keyword), pageable);
+                hotelId, normalizeStatus(status, true), normalize(keyword), managerId, pageable);
         return PageResponse.fromPage(page.map(this::mapToRoomResponse));
     }
 
     @Transactional(readOnly = true)
     public RoomDetailDTO getRoomDetail(Long roomId) {
         Room room = findRoom(roomId);
-        List<String> images = roomImageRepository.findByRoomId(roomId).stream()
+        List<String> images = roomImageRepository.findByRoomIdOrderByIdDesc(roomId).stream()
                 .map(image -> image.getImageUrl())
                 .toList();
         return RoomDetailDTO.builder()
@@ -58,10 +71,21 @@ public class RoomService {
                 .build();
     }
 
+    private void checkManagerPermission(Hotel hotel) {
+        User current = currentUserService.requireCurrentUser();
+        if (current.getRole() == Role.MANAGER) {
+            User manager = hotel.getManager();
+            if (manager == null || !manager.getId().equals(current.getId())) {
+                throw new AccessDeniedException("Bạn không có quyền quản lý khách sạn này");
+            }
+        }
+    }
+
     @Transactional
     public RoomResponseDTO createRoom(RoomCreateDTO dto) {
         Hotel hotel = hotelRepository.findById(dto.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách sạn tương ứng"));
+        checkManagerPermission(hotel);
         String number = dto.getRoomNumber().trim();
         if (roomRepository.existsByHotelIdAndRoomNumberIgnoreCase(hotel.getId(), number)) {
             throw new BadRequestException("Room number already exists in this hotel");
@@ -81,6 +105,7 @@ public class RoomService {
     @Transactional
     public RoomResponseDTO updateRoom(Long roomId, RoomUpdateDTO dto) {
         Room room = findRoom(roomId);
+        checkManagerPermission(room.getHotel());
         String number = dto.getRoomNumber().trim();
         if (roomRepository.existsByHotelIdAndRoomNumberIgnoreCaseAndIdNot(
                 room.getHotel().getId(), number, roomId)) {
@@ -97,7 +122,9 @@ public class RoomService {
 
     @Transactional
     public void deleteRoom(Long roomId) {
-        roomRepository.delete(findRoom(roomId));
+        Room room = findRoom(roomId);
+        checkManagerPermission(room.getHotel());
+        roomRepository.delete(room);
     }
 
     private Room findRoom(Long id) {
@@ -114,6 +141,14 @@ public class RoomService {
         }
     }
 
+    @Transactional
+    public RoomResponseDTO updateRoomStatus(Long roomId, String status) {
+        Room room = findRoom(roomId);
+        checkManagerPermission(room.getHotel());
+        room.setStatus(normalizeStatus(status, false));
+        return mapToRoomResponse(roomRepository.save(room));
+    }
+
     private String normalizeStatus(String value, boolean optional) {
         if (value == null || value.isBlank()) {
             if (optional) {
@@ -122,8 +157,9 @@ public class RoomService {
             throw new BadRequestException("Trạng thái không được để trống");
         }
         String status = value.trim().toLowerCase();
-        if (!status.equals("active") && !status.equals("inactive")) {
-            throw new BadRequestException("Trạng thái phải là active hoặc inactive");
+        List<String> validStatuses = List.of("active", "available", "occupied", "cleaning", "maintenance", "inactive");
+        if (!validStatuses.contains(status)) {
+            throw new BadRequestException("Trạng thái phòng phải là: active/available, occupied, cleaning, maintenance, hoặc inactive");
         }
         return status;
     }
@@ -133,7 +169,7 @@ public class RoomService {
     }
 
     private RoomResponseDTO mapToRoomResponse(Room room) {
-        List<String> images = roomImageRepository.findByRoomId(room.getId()).stream()
+        List<String> images = roomImageRepository.findByRoomIdOrderByIdDesc(room.getId()).stream()
                 .map(image -> image.getImageUrl())
                 .toList();
         return RoomResponseDTO.builder()
@@ -147,5 +183,18 @@ public class RoomService {
                 .status(room.getStatus())
                 .images(images)
                 .build();
+    }
+
+    @Transactional
+    public String uploadImage(Long roomId, MultipartFile file) {
+        Room room = findRoom(roomId);
+        checkManagerPermission(room.getHotel());
+        String imageUrl = fileStorageService.storeImage(file, "rooms");
+        RoomImage roomImage = RoomImage.builder()
+                .room(room)
+                .imageUrl(imageUrl)
+                .build();
+        roomImageRepository.save(roomImage);
+        return imageUrl;
     }
 }

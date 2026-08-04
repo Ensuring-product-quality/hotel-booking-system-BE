@@ -25,27 +25,30 @@ public class HotelService {
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
     private final FileStorageService fileStorageService;
+    private final com.hotelnow.backend.repository.UserRepository userRepository;
 
     public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository,
                         RoomImageRepository roomImageRepository,
-                        FileStorageService fileStorageService) {
+                        FileStorageService fileStorageService,
+                        com.hotelnow.backend.repository.UserRepository userRepository) {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
         this.roomImageRepository = roomImageRepository;
         this.fileStorageService = fileStorageService;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<HotelResponseDTO> searchHotels(String city, Integer stars, String keyword, String status, Pageable pageable) {
+    public PageResponse<HotelResponseDTO> searchHotels(String city, Integer stars, String keyword, String status, Long managerId, Pageable pageable) {
         Page<Hotel> hotelsPage;
         Sort.Order priceOrder = pageable.getSort().getOrderFor("price");
         if (priceOrder != null) {
             Pageable pricePage = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
             hotelsPage = priceOrder.isAscending()
-                    ? hotelRepository.searchHotelsByLowestPriceAsc(city, stars, keyword, status, pricePage)
-                    : hotelRepository.searchHotelsByLowestPriceDesc(city, stars, keyword, status, pricePage);
+                    ? hotelRepository.searchHotelsByLowestPriceAsc(city, stars, keyword, status, managerId, pricePage)
+                    : hotelRepository.searchHotelsByLowestPriceDesc(city, stars, keyword, status, managerId, pricePage);
         } else {
-            hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, pageable);
+            hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, managerId, pageable);
         }
         return PageResponse.fromPage(hotelsPage.map(this::mapToHotelResponse));
     }
@@ -58,7 +61,7 @@ public class HotelService {
         List<RoomResponseDTO> rooms = roomRepository.findAll().stream()
                 .filter(r -> r.getHotel().getId().equals(hotelId))
                 .map(r -> {
-                    List<String> roomImages = roomImageRepository.findByRoomId(r.getId()).stream()
+                    List<String> roomImages = roomImageRepository.findByRoomIdOrderByIdDesc(r.getId()).stream()
                             .map(img -> img.getImageUrl())
                             .toList();
                     return RoomResponseDTO.builder()
@@ -75,6 +78,9 @@ public class HotelService {
                 })
                 .collect(Collectors.toList());
 
+        Long mgrId = hotel.getManager() != null ? hotel.getManager().getId() : null;
+        String mgrName = hotel.getManager() != null ? (hotel.getManager().getFullName() != null && !hotel.getManager().getFullName().isBlank() ? hotel.getManager().getFullName() : hotel.getManager().getUsername()) : null;
+
         return HotelDetailDTO.builder()
                 .id(hotel.getId())
                 .name(hotel.getName())
@@ -84,6 +90,8 @@ public class HotelService {
                 .description(hotel.getDescription())
                 .status(hotel.getStatus())
                 .averageRating(hotel.getAverageRating())
+                .managerId(mgrId)
+                .managerName(mgrName)
                 .images(toImages(hotel.getImageUrl()))
                 .rooms(rooms)
                 .build();
@@ -100,6 +108,10 @@ public class HotelService {
                 .status(createDTO.getStatus())
                 .build();
 
+        if (createDTO.getManagerId() != null) {
+            userRepository.findById(createDTO.getManagerId()).ifPresent(hotel::setManager);
+        }
+
         Hotel savedHotel = hotelRepository.save(hotel);
         return mapToHotelResponse(savedHotel);
     }
@@ -115,6 +127,10 @@ public class HotelService {
         hotel.setStars(updateDTO.getStars());
         hotel.setDescription(updateDTO.getDescription());
         hotel.setStatus(updateDTO.getStatus());
+
+        if (updateDTO.getManagerId() != null) {
+            userRepository.findById(updateDTO.getManagerId()).ifPresent(hotel::setManager);
+        }
 
         Hotel savedHotel = hotelRepository.save(hotel);
         return mapToHotelResponse(savedHotel);
@@ -138,6 +154,9 @@ public class HotelService {
     }
 
     private HotelResponseDTO mapToHotelResponse(Hotel hotel) {
+        Long mgrId = hotel.getManager() != null ? hotel.getManager().getId() : null;
+        String mgrName = hotel.getManager() != null ? (hotel.getManager().getFullName() != null && !hotel.getManager().getFullName().isBlank() ? hotel.getManager().getFullName() : hotel.getManager().getUsername()) : null;
+
         return HotelResponseDTO.builder()
                 .id(hotel.getId())
                 .name(hotel.getName())
@@ -147,6 +166,8 @@ public class HotelService {
                 .description(hotel.getDescription())
                 .status(hotel.getStatus())
                 .averageRating(hotel.getAverageRating())
+                .managerId(mgrId)
+                .managerName(mgrName)
                 .price(roomRepository
                         .findFirstByHotelIdAndStatusOrderByPriceAsc(hotel.getId(), "active")
                         .map(room -> room.getPrice()).orElse(null))

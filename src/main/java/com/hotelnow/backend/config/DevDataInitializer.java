@@ -52,51 +52,75 @@ public class DevDataInitializer implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private User ensureUserExists(String username, String password, String email, String fullName, String phone, Role role) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            user = User.builder()
+                    .username(username)
+                    .password(passwordEncoder.encode(password))
+                    .email(email)
+                    .fullName(fullName)
+                    .phone(phone)
+                    .role(role)
+                    .status("active")
+                    .build();
+            return userRepository.save(user);
+        } else {
+            user.setPassword(passwordEncoder.encode(password));
+            user.setRole(role);
+            user.setStatus("active");
+            return userRepository.save(user);
+        }
+    }
+
     @Override
     public void run(String... args) throws Exception {
-        // Ensure default staff user exists
-        if (!userRepository.existsByUsername("staff")) {
-            User staff = User.builder()
-                    .username("staff")
-                    .password(passwordEncoder.encode("password"))
-                    .email("staff@hotelnow.com")
-                    .fullName("Phạm Lễ Tân")
-                    .phone("0933445566")
-                    .role(Role.STAFF)
-                    .status("active")
-                    .build();
-            userRepository.save(staff);
-        }
+        ensureUserExists("staff", "password", "staff@hotelnow.com", "Nhân Viên Khách Sạn", "0987654321", Role.STAFF);
+        ensureUserExists("customer", "password", "customer@hotelnow.com", "Nguyễn Văn Khách", "0912345678", Role.CUSTOMER);
+        ensureUserExists("admin", "password", "admin@hotelnow.com", "Quản Trị Viên", "0909090909", Role.ADMIN);
+        User defaultManager = ensureUserExists("manager", "password", "manager@hotelnow.com", "Quản Lý Khách Sạn", "0911223344", Role.MANAGER);
+        User mgrSapa = ensureUserExists("manager_sapa", "password", "sapa@hotelnow.com", "Quản Lý Sa Pa", "0912222222", Role.MANAGER);
+        User mgrNinhBinh = ensureUserExists("manager_ninhbinh", "password", "ninhbinh@hotelnow.com", "Quản Lý Ninh Bình", "0913333333", Role.MANAGER);
+        User mgrDaNang = ensureUserExists("manager_danang", "password", "danang@hotelnow.com", "Quản Lý Đà Nẵng", "0914444444", Role.MANAGER);
+        User mgrHoiAn = ensureUserExists("manager_hoian", "password", "hoian@hotelnow.com", "Quản Lý Hội An", "0915555555", Role.MANAGER);
+        User mgrNhaTrang = ensureUserExists("manager_nhatrang", "password", "nhatrang@hotelnow.com", "Quản Lý Nha Trang", "0916666666", Role.MANAGER);
+        User mgrDaLat = ensureUserExists("manager_dalat", "password", "dalat@hotelnow.com", "Quản Lý Đà Lạt", "0917777777", Role.MANAGER);
+        User mgrSaigon = ensureUserExists("manager_saigon", "password", "saigon@hotelnow.com", "Quản Lý Sài Gòn", "0918888888", Role.MANAGER);
+        User mgrPhuQuoc = ensureUserExists("manager_phuquoc", "password", "phuquoc@hotelnow.com", "Quản Lý Phú Quốc", "0919999999", Role.MANAGER);
+        User mgrVungTau = ensureUserExists("manager_vungtau", "password", "vungtau@hotelnow.com", "Quản Lý Vũng Tàu", "0920000000", Role.MANAGER);
+        User mgrCanTho = ensureUserExists("manager_cantho", "password", "cantho@hotelnow.com", "Quản Lý Cần Thơ", "0921111111", Role.MANAGER);
 
-        if (userRepository.count() > 0 && hotelRepository.count() > 0) {
+        if (hotelRepository.count() > 0) {
+            hotelRepository.findAll().forEach(hotel -> {
+                if (hotel.getManager() == null) {
+                    String name = hotel.getName().toLowerCase();
+                    if (name.contains("westlake") || name.contains("ha long")) {
+                        hotel.setManager(defaultManager);
+                    } else if (name.contains("mgallery") || name.contains("coupole")) {
+                        hotel.setManager(mgrSapa);
+                    } else if (name.contains("ninh binh") || name.contains("emeralda")) {
+                        hotel.setManager(mgrNinhBinh);
+                    } else if (name.contains("danang") || name.contains("pullman")) {
+                        hotel.setManager(mgrDaNang);
+                    } else if (name.contains("hoi an") || name.contains("riverside")) {
+                        hotel.setManager(mgrHoiAn);
+                    } else if (name.contains("nha trang")) {
+                        hotel.setManager(mgrNhaTrang);
+                    } else if (name.contains("palace") || name.contains("dalat")) {
+                        hotel.setManager(mgrDaLat);
+                    } else if (name.contains("sofitel") || name.contains("saigon")) {
+                        hotel.setManager(mgrSaigon);
+                    } else if (name.contains("regent") || name.contains("phu quoc")) {
+                        hotel.setManager(mgrPhuQuoc);
+                    } else if (name.contains("imperial") || name.contains("vung tau")) {
+                        hotel.setManager(mgrVungTau);
+                    } else if (name.contains("azerai") || name.contains("can tho")) {
+                        hotel.setManager(mgrCanTho);
+                    }
+                    hotelRepository.save(hotel);
+                }
+            });
             return; // Data already initialized
-        }
-
-        // 1. Create Default Users if missing
-        if (!userRepository.existsByUsername("customer")) {
-            User customer = User.builder()
-                    .username("customer")
-                    .password(passwordEncoder.encode("password"))
-                    .email("customer@hotelnow.com")
-                    .fullName("Nguyễn Văn An")
-                    .phone("0912345678")
-                    .role(Role.CUSTOMER)
-                    .status("active")
-                    .build();
-            userRepository.save(customer);
-        }
-
-        if (!userRepository.existsByUsername("admin")) {
-            User admin = User.builder()
-                    .username("admin")
-                    .password(passwordEncoder.encode("password"))
-                    .email("admin@hotelnow.com")
-                    .fullName("Lê Quản Trị")
-                    .phone("0909090909")
-                    .role(Role.ADMIN)
-                    .status("active")
-                    .build();
-            userRepository.save(admin);
         }
 
         // 2. Create Default Hotels representing all 12 destinations on UI
@@ -109,6 +133,7 @@ public class DevDataInitializer implements CommandLineRunner {
                 .description("Sang trọng bậc nhất bên Hồ Tây thơ mộng.")
                 .status("active")
                 .averageRating(4.8)
+                .manager(defaultManager)
                 .imageUrl(String.join(",",
                         "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=600", // Main
                         "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600",
@@ -128,6 +153,7 @@ public class DevDataInitializer implements CommandLineRunner {
                 .description("Lâu đài tráng lệ nổi bật giữa kỳ quan thiên nhiên Vịnh Hạ Long.")
                 .status("active")
                 .averageRating(4.7)
+                .manager(defaultManager)
                 .imageUrl(String.join(",",
                         "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600", // Main
                         "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=600",
@@ -331,6 +357,32 @@ public class DevDataInitializer implements CommandLineRunner {
                 ))
                 .build();
 
+        for (Hotel hotel : Arrays.asList(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12)) {
+            String name = hotel.getName().toLowerCase();
+            if (name.contains("westlake") || name.contains("ha long")) {
+                hotel.setManager(defaultManager);
+            } else if (name.contains("mgallery") || name.contains("coupole")) {
+                hotel.setManager(mgrSapa);
+            } else if (name.contains("ninh binh") || name.contains("emeralda")) {
+                hotel.setManager(mgrNinhBinh);
+            } else if (name.contains("danang") || name.contains("pullman")) {
+                hotel.setManager(mgrDaNang);
+            } else if (name.contains("hoi an") || name.contains("riverside")) {
+                hotel.setManager(mgrHoiAn);
+            } else if (name.contains("nha trang")) {
+                hotel.setManager(mgrNhaTrang);
+            } else if (name.contains("palace") || name.contains("dalat")) {
+                hotel.setManager(mgrDaLat);
+            } else if (name.contains("sofitel") || name.contains("saigon")) {
+                hotel.setManager(mgrSaigon);
+            } else if (name.contains("regent") || name.contains("phu quoc")) {
+                hotel.setManager(mgrPhuQuoc);
+            } else if (name.contains("imperial") || name.contains("vung tau")) {
+                hotel.setManager(mgrVungTau);
+            } else if (name.contains("azerai") || name.contains("can tho")) {
+                hotel.setManager(mgrCanTho);
+            }
+        }
         hotelRepository.saveAll(Arrays.asList(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12));
 
         // 3. Create rooms with proper type, capacity, description, and high-quality Unsplash images

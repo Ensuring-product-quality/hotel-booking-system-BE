@@ -22,7 +22,7 @@ public class BookingController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'STAFF')")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> createBooking(
             @Valid @RequestBody BookingCreateDTO createDTO) {
         BookingResponseDTO data = bookingService.createBooking(createDTO);
@@ -58,15 +58,10 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success(bookingService.getBookingDetail(bookingId)));
     }
 
-    @GetMapping("/{bookingId}/payment-status")
-    public ResponseEntity<ApiResponse<String>> getPaymentStatus(@PathVariable Long bookingId) {
-        return ResponseEntity.ok(ApiResponse.success(
-                "Trạng thái thanh toán",
-                bookingService.getPaymentStatus(bookingId),
-                HttpStatus.OK.value()));
-    }
+
 
     @PutMapping("/{bookingId}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> updateBooking(
             @PathVariable Long bookingId,
             @Valid @RequestBody BookingUpdateDTO updateDTO) {
@@ -76,9 +71,35 @@ public class BookingController {
                 HttpStatus.OK.value()));
     }
 
+    @PostMapping("/{bookingId}/check-in")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<BookingResponseDTO>> checkIn(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Check-in thành công",
+                bookingService.checkInBooking(bookingId),
+                HttpStatus.OK.value()));
+    }
+
+    @PostMapping("/{bookingId}/check-out")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<BookingResponseDTO>> checkOut(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Check-out thành công. Phòng đã được chuyển sang trạng thái dọn dẹp.",
+                bookingService.checkOutBooking(bookingId),
+                HttpStatus.OK.value()));
+    }
+
     @DeleteMapping("/{bookingId}")
     public ResponseEntity<ApiResponse<Void>> cancelBooking(@PathVariable Long bookingId) {
         bookingService.cancelBooking(bookingId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{bookingId}/payment-status")
+    public ResponseEntity<ApiResponse<String>> getPaymentStatus(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Trạng thái thanh toán",
+                bookingService.getPaymentStatus(bookingId),
+                HttpStatus.OK.value()));
     }
 }

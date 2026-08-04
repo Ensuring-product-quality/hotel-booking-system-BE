@@ -1,11 +1,8 @@
 package com.hotelnow.backend.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.Data;
-
 import java.math.BigDecimal;
 
-@Data
 public class RoomUpdateDTO {
     @NotBlank(message = "Room number is required")
     private String roomNumber;
@@ -26,4 +23,33 @@ public class RoomUpdateDTO {
 
     @NotBlank(message = "Trạng thái không được để trống")
     private String status;
+
+    public RoomUpdateDTO() {}
+
+    public RoomUpdateDTO(String roomNumber, String type, BigDecimal price, Integer capacity, String description, String status) {
+        this.roomNumber = roomNumber;
+        this.type = type;
+        this.price = price;
+        this.capacity = capacity;
+        this.description = description;
+        this.status = status;
+    }
+
+    public String getRoomNumber() { return roomNumber; }
+    public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+
+    public Integer getCapacity() { return capacity; }
+    public void setCapacity(Integer capacity) { this.capacity = capacity; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

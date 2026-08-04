@@ -11,6 +11,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     String FILTER = "(:city IS NULL OR LOWER(h.city) = LOWER(:city)) AND " +
             "(:stars IS NULL OR h.stars = :stars) AND " +
             "(:status IS NULL OR h.status = :status) AND " +
+            "(:managerId IS NULL OR h.manager.id = :managerId) AND " +
             "(:keyword IS NULL OR LOWER(h.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(h.description) LIKE LOWER(CONCAT('%', :keyword, '%')))";
 
@@ -18,11 +19,13 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             "(:city IS NULL OR LOWER(:city) LIKE LOWER(CONCAT('%', h.city, '%')) OR LOWER(h.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
             "(:stars IS NULL OR h.stars = :stars) AND " +
             "(:status IS NULL OR h.status = :status) AND " +
+            "(:managerId IS NULL OR h.manager.id = :managerId) AND " +
             "(:keyword IS NULL OR LOWER(h.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(h.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Hotel> searchHotels(@Param("city") String city,
                              @Param("stars") Integer stars,
                              @Param("keyword") String keyword,
                              @Param("status") String status,
+                             @Param("managerId") Long managerId,
                              Pageable pageable);
 
     @Query(
@@ -35,6 +38,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             @Param("stars") Integer stars,
             @Param("keyword") String keyword,
             @Param("status") String status,
+            @Param("managerId") Long managerId,
             Pageable pageable);
 
     @Query(
@@ -47,5 +51,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             @Param("stars") Integer stars,
             @Param("keyword") String keyword,
             @Param("status") String status,
+            @Param("managerId") Long managerId,
             Pageable pageable);
 }

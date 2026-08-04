@@ -18,9 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class HotelController {
 
     private final HotelService hotelService;
+    private final com.hotelnow.backend.service.CurrentUserService currentUserService;
 
-    public HotelController(HotelService hotelService) {
+    public HotelController(HotelService hotelService, com.hotelnow.backend.service.CurrentUserService currentUserService) {
         this.hotelService = hotelService;
+        this.currentUserService = currentUserService;
     }
 
     @GetMapping
@@ -35,7 +37,15 @@ public class HotelController {
 
         Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "price", "createdAt", "updatedAt"));
 
-        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, pageable);
+        Long managerId = null;
+        try {
+            com.hotelnow.backend.entity.User current = currentUserService.requireCurrentUser();
+            if (current.getRole() == com.hotelnow.backend.entity.Role.MANAGER) {
+                managerId = current.getId();
+            }
+        } catch (Exception ignored) {}
+
+        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
@@ -57,19 +67,27 @@ public class HotelController {
 
         Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "name", "city", "stars", "averageRating", "price", "createdAt", "updatedAt"));
 
-        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, pageable);
+        Long managerId = null;
+        try {
+            com.hotelnow.backend.entity.User current = currentUserService.requireCurrentUser();
+            if (current.getRole() == com.hotelnow.backend.entity.Role.MANAGER) {
+                managerId = current.getId();
+            }
+        } catch (Exception ignored) {}
+
+        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
     public ResponseEntity<ApiResponse<HotelResponseDTO>> createHotel(@Valid @RequestBody HotelCreateDTO createDTO) {
         HotelResponseDTO data = hotelService.createHotel(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Tạo mới khách sạn thành công", data, HttpStatus.CREATED.value()));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
     @PutMapping("/{hotelId}")
     public ResponseEntity<ApiResponse<HotelResponseDTO>> updateHotel(
             @PathVariable Long hotelId,
@@ -86,7 +104,7 @@ public class HotelController {
                 .body(ApiResponse.success("Xóa khách sạn thành công", null, HttpStatus.NO_CONTENT.value()));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
     @PostMapping("/{hotelId}/images")
     public ResponseEntity<ApiResponse<String>> uploadHotelImage(
             @PathVariable Long hotelId,

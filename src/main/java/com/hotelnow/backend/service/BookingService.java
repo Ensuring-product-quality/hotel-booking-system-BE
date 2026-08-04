@@ -47,7 +47,7 @@ public class BookingService {
 
         Room room = roomRepository.findByIdForUpdate(createDTO.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
-        if (!"active".equalsIgnoreCase(room.getStatus())) {
+        if (!"active".equalsIgnoreCase(room.getStatus()) && !"available".equalsIgnoreCase(room.getStatus())) {
             throw new BadRequestException("Phòng hiện không ở trạng thái sẵn sàng để đặt");
         }
         if (createDTO.getGuests() > room.getCapacity()) {
@@ -79,7 +79,8 @@ public class BookingService {
         User current = currentUserService.requireCurrentUser();
         Long effectiveUserId = currentUserService.isStaff(current) ? requestedUserId : current.getId();
         BookingStatus status = parseStatus(statusValue);
-        Page<Booking> page = bookingRepository.searchBookings(effectiveUserId, status, normalize(keyword), pageable);
+        Long managerId = (current.getRole() == Role.MANAGER) ? current.getId() : null;
+        Page<Booking> page = bookingRepository.searchBookings(effectiveUserId, status, normalize(keyword), managerId, pageable);
         return PageResponse.fromPage(page.map(this::mapToBookingResponse));
     }
 
@@ -90,37 +91,11 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public BookingDetailDTO publicLookup(Long bookingId, String emailOrPhone) {
-        if (emailOrPhone == null || emailOrPhone.isBlank()) {
-            throw new ResourceNotFoundException("Vui lòng nhập Email hoặc Số điện thoại để tra cứu");
-        }
-
-        String input = emailOrPhone.trim();
-        boolean isEmailInput = input.contains("@");
-        String fieldLabel = isEmailInput ? "email" : "số điện thoại";
-        String notFoundMsg = "Không tìm thấy đơn đặt phòng với mã HB-" + bookingId + " và " + fieldLabel + " \"" + input + "\"";
-
+    public BookingDetailDTO publicLookup(Long bookingId, String email) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElse(null);
-
-        if (booking == null) {
-            throw new ResourceNotFoundException(notFoundMsg);
-        }
-
-        String search = input.toLowerCase();
-        String userEmail = booking.getUser().getEmail() != null ? booking.getUser().getEmail().trim().toLowerCase() : "";
-        String userPhone = booking.getUser().getPhone() != null ? booking.getUser().getPhone().trim().toLowerCase() : "";
-        String userUsername = booking.getUser().getUsername() != null ? booking.getUser().getUsername().trim().toLowerCase() : "";
-
-        boolean match = userEmail.equalsIgnoreCase(search)
-                || userPhone.equalsIgnoreCase(search)
-                || userUsername.equalsIgnoreCase(search)
-                || (!userEmail.isEmpty() && userEmail.contains(search))
-                || (!userPhone.isEmpty() && userPhone.contains(search))
-                || (!userUsername.isEmpty() && userUsername.contains(search));
-
-        if (!match) {
-            throw new ResourceNotFoundException(notFoundMsg);
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt phòng"));
+        if (email == null || !booking.getUser().getEmail().equalsIgnoreCase(email.trim())) {
+            throw new ResourceNotFoundException("Không tìm thấy đơn đặt phòng");
         }
         return mapToBookingDetail(booking);
     }
@@ -154,7 +129,7 @@ public class BookingService {
         if (datesChanged || guestsChanged) {
             Room room = roomRepository.findByIdForUpdate(booking.getRoom().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
-            if (!"active".equalsIgnoreCase(room.getStatus())) {
+            if (!"active".equalsIgnoreCase(room.getStatus()) && !"available".equalsIgnoreCase(room.getStatus())) {
                 throw new BadRequestException("Phòng hiện không ở trạng thái sẵn sàng để đặt");
             }
             if (nextGuests > room.getCapacity()) {
@@ -206,6 +181,26 @@ public class BookingService {
         bookingRepository.save(booking);
     }
 
+    @Transactional
+    public BookingResponseDTO checkInBooking(Long bookingId) {
+        Booking booking = findAccessibleBooking(bookingId);
+        booking.setStatus(BookingStatus.CONFIRMED);
+        Room room = booking.getRoom();
+        room.setStatus("occupied");
+        roomRepository.save(room);
+        return mapToBookingResponse(bookingRepository.save(booking));
+    }
+
+    @Transactional
+    public BookingResponseDTO checkOutBooking(Long bookingId) {
+        Booking booking = findAccessibleBooking(bookingId);
+        booking.setStatus(BookingStatus.COMPLETED);
+        Room room = booking.getRoom();
+        room.setStatus("cleaning");
+        roomRepository.save(room);
+        return mapToBookingResponse(bookingRepository.save(booking));
+    }
+
     @Transactional(readOnly = true)
     public boolean checkAvailability(Long roomId, LocalDate checkIn, LocalDate checkOut) {
         validateDates(checkIn, checkOut);
@@ -230,6 +225,12 @@ public class BookingService {
         User current = currentUserService.requireCurrentUser();
         if (!booking.getUser().getId().equals(current.getId()) && !currentUserService.isStaff(current)) {
             throw new AccessDeniedException("Bạn không có quyền truy cập đơn đặt phòng của người dùng khác");
+        }
+        if (current.getRole() == Role.MANAGER) {
+            User manager = booking.getRoom().getHotel().getManager();
+            if (manager == null || !manager.getId().equals(current.getId())) {
+                throw new AccessDeniedException("Bạn chỉ có quyền truy cập đơn đặt phòng thuộc khách sạn mà mình quản lý");
+            }
         }
         return booking;
     }

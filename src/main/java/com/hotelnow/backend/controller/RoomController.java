@@ -13,15 +13,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/rooms")
 public class RoomController {
 
     private final RoomService roomService;
+    private final com.hotelnow.backend.service.CurrentUserService currentUserService;
 
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, com.hotelnow.backend.service.CurrentUserService currentUserService) {
         this.roomService = roomService;
+        this.currentUserService = currentUserService;
     }
 
     @GetMapping
@@ -35,7 +38,15 @@ public class RoomController {
 
         Pageable pageable = PageableFactory.create(page, size, sort, Set.of("id", "roomNumber", "type", "price", "capacity", "status", "createdAt", "updatedAt"));
 
-        PageResponse<RoomResponseDTO> data = roomService.searchRooms(hotelId, status, keyword, pageable);
+        Long managerId = null;
+        try {
+            com.hotelnow.backend.entity.User current = currentUserService.requireCurrentUser();
+            if (current.getRole() == com.hotelnow.backend.entity.Role.MANAGER) {
+                managerId = current.getId();
+            }
+        } catch (Exception ignored) {}
+
+        PageResponse<RoomResponseDTO> data = roomService.searchRooms(hotelId, status, keyword, managerId, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
@@ -52,7 +63,7 @@ public class RoomController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponseDTO>> createRoom(@Valid @RequestBody RoomCreateDTO createDTO) {
         RoomResponseDTO data = roomService.createRoom(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -60,7 +71,7 @@ public class RoomController {
     }
 
     @PutMapping("/{roomId}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponseDTO>> updateRoom(
             @PathVariable Long roomId,
             @Valid @RequestBody RoomUpdateDTO updateDTO) {
@@ -68,8 +79,26 @@ public class RoomController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin phòng thành công", data, HttpStatus.OK.value()));
     }
 
+    @PatchMapping("/{roomId}/status")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<RoomResponseDTO>> updateRoomStatus(
+            @PathVariable Long roomId,
+            @Valid @RequestBody RoomStatusUpdateDTO statusDTO) {
+        RoomResponseDTO data = roomService.updateRoomStatus(roomId, statusDTO.getStatus());
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái phòng thành công", data, HttpStatus.OK.value()));
+    }
+
+    @PostMapping("/{roomId}/image")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<String>> uploadImage(
+            @PathVariable Long roomId,
+            @RequestParam("file") MultipartFile file) {
+        String imageUrl = roomService.uploadImage(roomId, file);
+        return ResponseEntity.ok(ApiResponse.success("Tải ảnh lên thành công", imageUrl, HttpStatus.OK.value()));
+    }
+
     @DeleteMapping("/{roomId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteRoom(@PathVariable Long roomId) {
         roomService.deleteRoom(roomId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)

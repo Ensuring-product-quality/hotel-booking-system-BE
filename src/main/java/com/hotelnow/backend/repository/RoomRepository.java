@@ -24,10 +24,12 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("SELECT r FROM Room r WHERE " +
             "(:hotelId IS NULL OR r.hotel.id = :hotelId) AND " +
             "(:status IS NULL OR r.status = :status) AND " +
+            "(:managerId IS NULL OR r.hotel.manager.id = :managerId) AND " +
             "(:keyword IS NULL OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Room> searchRooms(@Param("hotelId") Long hotelId,
                            @Param("status") String status,
                            @Param("keyword") String keyword,
+                           @Param("managerId") Long managerId,
                            Pageable pageable);
 }
