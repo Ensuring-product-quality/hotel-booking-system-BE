@@ -90,11 +90,23 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public BookingDetailDTO publicLookup(Long bookingId, String email) {
+    public BookingDetailDTO publicLookup(Long bookingId, String emailOrPhone) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt phòng"));
-        if (email == null || !booking.getUser().getEmail().equalsIgnoreCase(email.trim())) {
-            throw new ResourceNotFoundException("Không tìm thấy đơn đặt phòng");
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn đặt phòng với Mã ID đã nhập"));
+        if (emailOrPhone == null || emailOrPhone.isBlank()) {
+            throw new ResourceNotFoundException("Vui lòng nhập Email hoặc Số điện thoại để tra cứu");
+        }
+        String input = emailOrPhone.trim().toLowerCase();
+        String userEmail = booking.getUser().getEmail() != null ? booking.getUser().getEmail().trim().toLowerCase() : "";
+        String userUsername = booking.getUser().getUsername() != null ? booking.getUser().getUsername().trim().toLowerCase() : "";
+
+        boolean match = userEmail.equalsIgnoreCase(input)
+                || userUsername.equalsIgnoreCase(input)
+                || (!userEmail.isEmpty() && userEmail.contains(input))
+                || (!userUsername.isEmpty() && userUsername.contains(input));
+
+        if (!match) {
+            throw new ResourceNotFoundException("Email hoặc số điện thoại không trùng khớp với đơn đặt phòng #" + bookingId);
         }
         return mapToBookingDetail(booking);
     }
