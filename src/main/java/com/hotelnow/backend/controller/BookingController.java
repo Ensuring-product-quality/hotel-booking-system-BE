@@ -1,6 +1,7 @@
 package com.hotelnow.backend.controller;
 
 import java.util.Set;
+import java.util.List;
 import com.hotelnow.backend.dto.*;
 import com.hotelnow.backend.service.BookingService;
 import com.hotelnow.backend.util.PageableFactory;
@@ -100,6 +101,14 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success(
                 "Trạng thái thanh toán",
                 bookingService.getPaymentStatus(bookingId),
+                HttpStatus.OK.value()));
+    }
+
+    @GetMapping("/public/room/{roomId}/booked-dates")
+    public ResponseEntity<ApiResponse<List<BookedDateRangeDTO>>> getBookedDates(@PathVariable Long roomId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Danh sách ngày đã được đặt",
+                bookingService.getBookedDatesForRoom(roomId),
                 HttpStatus.OK.value()));
     }
 }

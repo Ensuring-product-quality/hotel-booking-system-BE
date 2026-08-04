@@ -47,7 +47,7 @@ public class BookingService {
 
         Room room = roomRepository.findByIdForUpdate(createDTO.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
-        if (!"active".equalsIgnoreCase(room.getStatus()) && !"available".equalsIgnoreCase(room.getStatus())) {
+        if ("inactive".equalsIgnoreCase(room.getStatus()) || "maintenance".equalsIgnoreCase(room.getStatus())) {
             throw new BadRequestException("Phòng hiện không ở trạng thái sẵn sàng để đặt");
         }
         if (createDTO.getGuests() > room.getCapacity()) {
@@ -338,5 +338,13 @@ public class BookingService {
                 .description(room.getDescription())
                 .status(room.getStatus())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookedDateRangeDTO> getBookedDatesForRoom(Long roomId) {
+        List<BookingStatus> activeStatuses = Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
+        return bookingRepository.findByRoomIdAndStatusIn(roomId, activeStatuses).stream()
+                .map(b -> new BookedDateRangeDTO(b.getCheckInDate(), b.getCheckOutDate()))
+                .toList();
     }
 }
