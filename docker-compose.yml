@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: hotelnow-mysql
+    environment:
+      MYSQL_DATABASE: hotelnow
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - hotelnow-network
+
+  spring-backend:
+    build: .
+    container_name: hotelnow-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/hotelnow?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - APP_BASE_URL=https://www.hotelnow.com/vi-vn/api
+      - SERVER_SERVLET_CONTEXT_PATH=/api
+    depends_on:
+      - mysql-db
+    networks:
+      - hotelnow-network
+
+volumes:
+  mysql-data:
+
+networks:
+  hotelnow-network:
+    driver: bridge
