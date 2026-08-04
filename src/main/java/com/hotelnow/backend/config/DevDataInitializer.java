@@ -75,7 +75,6 @@ public class DevDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        ensureUserExists("staff", "password", "staff@hotelnow.com", "Nhân Viên Khách Sạn", "0987654321", Role.STAFF);
         ensureUserExists("customer", "password", "customer@hotelnow.com", "Nguyễn Văn Khách", "0912345678", Role.CUSTOMER);
         ensureUserExists("admin", "password", "admin@hotelnow.com", "Quản Trị Viên", "0909090909", Role.ADMIN);
         User defaultManager = ensureUserExists("manager", "password", "manager@hotelnow.com", "Quản Lý Khách Sạn", "0911223344", Role.MANAGER);
