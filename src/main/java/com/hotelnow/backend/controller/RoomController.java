@@ -63,7 +63,7 @@ public class RoomController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponseDTO>> createRoom(@Valid @RequestBody RoomCreateDTO createDTO) {
         RoomResponseDTO data = roomService.createRoom(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -71,7 +71,7 @@ public class RoomController {
     }
 
     @PutMapping("/{roomId}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponseDTO>> updateRoom(
             @PathVariable Long roomId,
             @Valid @RequestBody RoomUpdateDTO updateDTO) {
@@ -80,7 +80,7 @@ public class RoomController {
     }
 
     @PatchMapping("/{roomId}/status")
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponseDTO>> updateRoomStatus(
             @PathVariable Long roomId,
             @Valid @RequestBody RoomStatusUpdateDTO statusDTO) {
@@ -89,7 +89,7 @@ public class RoomController {
     }
 
     @PostMapping("/{roomId}/image")
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<String>> uploadImage(
             @PathVariable Long roomId,
             @RequestParam("file") MultipartFile file) {

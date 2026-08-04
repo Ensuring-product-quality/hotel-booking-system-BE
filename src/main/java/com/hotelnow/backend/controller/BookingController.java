@@ -22,7 +22,7 @@ public class BookingController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> createBooking(
             @Valid @RequestBody BookingCreateDTO createDTO) {
         BookingResponseDTO data = bookingService.createBooking(createDTO);
@@ -61,7 +61,7 @@ public class BookingController {
 
 
     @PutMapping("/{bookingId}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> updateBooking(
             @PathVariable Long bookingId,
             @Valid @RequestBody BookingUpdateDTO updateDTO) {
@@ -72,7 +72,7 @@ public class BookingController {
     }
 
     @PostMapping("/{bookingId}/check-in")
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> checkIn(@PathVariable Long bookingId) {
         return ResponseEntity.ok(ApiResponse.success(
                 "Check-in thành công",
@@ -81,7 +81,7 @@ public class BookingController {
     }
 
     @PostMapping("/{bookingId}/check-out")
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> checkOut(@PathVariable Long bookingId) {
         return ResponseEntity.ok(ApiResponse.success(
                 "Check-out thành công. Phòng đã được chuyển sang trạng thái dọn dẹp.",
