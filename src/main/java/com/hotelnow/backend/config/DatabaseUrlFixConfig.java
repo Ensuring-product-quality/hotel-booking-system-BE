@@ -54,8 +54,9 @@ public class DatabaseUrlFixConfig {
         }
 
         if (finalUrl == null) {
-            finalUrl = "jdbc:h2:mem:hotelnow;DB_CLOSE_DELAY=-1";
-            dataSource.setDriverClassName("org.h2.Driver");
+            // Local development fallback: use localhost MySQL instead of H2
+            finalUrl = "jdbc:mysql://localhost:3306/hotelnow_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         } else {
             dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         }
@@ -72,8 +73,8 @@ public class DatabaseUrlFixConfig {
         }
         if (StringUtils.hasText(username)) {
             dataSource.setUsername(username);
-        } else if (finalUrl.contains("h2:mem")) {
-            dataSource.setUsername("sa");
+        } else {
+            dataSource.setUsername("root"); // Local MySQL default
         }
 
         // Resolve password
