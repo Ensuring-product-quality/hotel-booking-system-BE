@@ -24,7 +24,7 @@ public class UserCreateDTO {
     private String phone;
 
     @NotBlank(message = "Role is required")
-    private String role; // "ADMIN", "CUSTOMER", "STAFF"
+    private String role; // "ADMIN", "CUSTOMER", "MANAGER"
 
     @NotBlank(message = "Trạng thái không được để trống")
     private String status; // "active", "inactive"

@@ -52,7 +52,7 @@ public class RoomController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponseDTO>> createRoom(@Valid @RequestBody RoomCreateDTO createDTO) {
         RoomResponseDTO data = roomService.createRoom(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -60,7 +60,7 @@ public class RoomController {
     }
 
     @PutMapping("/{roomId}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<RoomResponseDTO>> updateRoom(
             @PathVariable Long roomId,
             @Valid @RequestBody RoomUpdateDTO updateDTO) {

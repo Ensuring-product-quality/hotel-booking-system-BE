@@ -16,5 +16,5 @@ public class UserUpdateDTO {
 
     private String status; // "active", "inactive"
 
-    private String role; // "ADMIN", "STAFF", "CUSTOMER"
+    private String role; // "ADMIN", "MANAGER", "CUSTOMER"
 }
