@@ -53,40 +53,47 @@ public class DatabaseUrlFixConfig {
             }
         }
 
+        boolean isH2 = false;
         if (finalUrl == null) {
-            // Local development fallback: use localhost MySQL instead of H2
-            finalUrl = "jdbc:mysql://localhost:3306/hotelnow_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-            dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            // Local development fallback: use H2 memory database
+            finalUrl = "jdbc:h2:mem:hotelnow_db;DB_CLOSE_DELAY=-1;MODE=MySQL";
+            dataSource.setDriverClassName("org.h2.Driver");
+            isH2 = true;
         } else {
             dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         }
 
         dataSource.setJdbcUrl(finalUrl);
 
-        // Resolve username
-        String username = System.getenv("SPRING_DATASOURCE_USERNAME");
-        if (!StringUtils.hasText(username)) {
-            username = System.getenv("MYSQLUSER");
-        }
-        if (!StringUtils.hasText(username)) {
-            username = System.getenv("DATABASE_USER");
-        }
-        if (StringUtils.hasText(username)) {
-            dataSource.setUsername(username);
+        if (isH2) {
+            dataSource.setUsername("sa");
+            dataSource.setPassword("");
         } else {
-            dataSource.setUsername("root"); // Local MySQL default
-        }
+            // Resolve username
+            String username = System.getenv("SPRING_DATASOURCE_USERNAME");
+            if (!StringUtils.hasText(username)) {
+                username = System.getenv("MYSQLUSER");
+            }
+            if (!StringUtils.hasText(username)) {
+                username = System.getenv("DATABASE_USER");
+            }
+            if (StringUtils.hasText(username)) {
+                dataSource.setUsername(username);
+            } else {
+                dataSource.setUsername("root"); // Local MySQL default
+            }
 
-        // Resolve password
-        String password = System.getenv("SPRING_DATASOURCE_PASSWORD");
-        if (!StringUtils.hasText(password)) {
-            password = System.getenv("MYSQLPASSWORD");
-        }
-        if (!StringUtils.hasText(password)) {
-            password = System.getenv("DATABASE_PASSWORD");
-        }
-        if (StringUtils.hasText(password)) {
-            dataSource.setPassword(password);
+            // Resolve password
+            String password = System.getenv("SPRING_DATASOURCE_PASSWORD");
+            if (!StringUtils.hasText(password)) {
+                password = System.getenv("MYSQLPASSWORD");
+            }
+            if (!StringUtils.hasText(password)) {
+                password = System.getenv("DATABASE_PASSWORD");
+            }
+            if (StringUtils.hasText(password)) {
+                dataSource.setPassword(password);
+            }
         }
 
         dataSource.setInitializationFailTimeout(0);
