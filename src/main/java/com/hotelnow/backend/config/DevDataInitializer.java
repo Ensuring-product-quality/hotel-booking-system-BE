@@ -75,7 +75,6 @@ public class DevDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        ensureUserExists("staff", "password", "staff@hotelnow.com", "Nhân Viên Khách Sạn", "0987654321", Role.STAFF);
         ensureUserExists("customer", "password", "customer@hotelnow.com", "Nguyễn Văn Khách", "0912345678", Role.CUSTOMER);
         ensureUserExists("admin", "password", "admin@hotelnow.com", "Quản Trị Viên", "0909090909", Role.ADMIN);
         User defaultManager = ensureUserExists("manager", "password", "manager@hotelnow.com", "Quản Lý Khách Sạn", "0911223344", Role.MANAGER);
@@ -155,13 +154,13 @@ public class DevDataInitializer implements CommandLineRunner {
                 .averageRating(4.7)
                 .manager(defaultManager)
                 .imageUrl(String.join(",",
-                        "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600", // Main
-                        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=600",
-                        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=600",
-                        "https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=600",
-                        "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=600",
-                        "https://images.unsplash.com/photo-1546548970-71785318a17b?q=80&w=600",
-                        "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?q=80&w=600"
+                        "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80", // Main
+                        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+                        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80",
+                        "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80",
+                        "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80",
+                        "https://images.unsplash.com/photo-1546548970-71785318a17b?auto=format&fit=crop&w=1200&q=80",
+                        "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1200&q=80"
                 ))
                 .build();
 

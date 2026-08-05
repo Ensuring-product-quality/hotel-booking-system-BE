@@ -31,6 +31,8 @@ public class HotelController {
             @RequestParam(required = false) Integer stars,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) java.math.BigDecimal minPrice,
+            @RequestParam(required = false) java.math.BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
@@ -45,7 +47,7 @@ public class HotelController {
             }
         } catch (Exception ignored) {}
 
-        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, pageable);
+        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
@@ -61,6 +63,8 @@ public class HotelController {
             @RequestParam(required = false) Integer stars,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) java.math.BigDecimal minPrice,
+            @RequestParam(required = false) java.math.BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
@@ -75,19 +79,19 @@ public class HotelController {
             }
         } catch (Exception ignored) {}
 
-        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, pageable);
+        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<HotelResponseDTO>> createHotel(@Valid @RequestBody HotelCreateDTO createDTO) {
         HotelResponseDTO data = hotelService.createHotel(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Tạo mới khách sạn thành công", data, HttpStatus.CREATED.value()));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PutMapping("/{hotelId}")
     public ResponseEntity<ApiResponse<HotelResponseDTO>> updateHotel(
             @PathVariable Long hotelId,
@@ -104,7 +108,7 @@ public class HotelController {
                 .body(ApiResponse.success("Xóa khách sạn thành công", null, HttpStatus.NO_CONTENT.value()));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/{hotelId}/images")
     public ResponseEntity<ApiResponse<String>> uploadHotelImage(
             @PathVariable Long hotelId,

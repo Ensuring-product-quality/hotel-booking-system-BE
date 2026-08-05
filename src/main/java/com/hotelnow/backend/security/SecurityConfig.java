@@ -84,7 +84,6 @@ public class SecurityConfig {
                                 "/api/hotels/**",
                                 "/api/rooms/**",
                                 "/api/reviews/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
