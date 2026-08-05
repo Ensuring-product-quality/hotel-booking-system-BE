@@ -27,6 +27,8 @@ public class HotelCreateDTO {
 
     private Long managerId;
 
+    private String imageUrl;
+
     public HotelCreateDTO() {}
 
     public HotelCreateDTO(String name, String address, String city, Integer stars, String description, String status, Long managerId) {
@@ -59,4 +61,7 @@ public class HotelCreateDTO {
 
     public Long getManagerId() { return managerId; }
     public void setManagerId(Long managerId) { this.managerId = managerId; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

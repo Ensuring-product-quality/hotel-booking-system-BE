@@ -108,6 +108,10 @@ public class HotelService {
                 .status(createDTO.getStatus())
                 .build();
 
+        if (createDTO.getImageUrl() != null && !createDTO.getImageUrl().isBlank()) {
+            hotel.setImageUrl(createDTO.getImageUrl());
+        }
+
         if (createDTO.getManagerId() != null) {
             userRepository.findById(createDTO.getManagerId()).ifPresent(hotel::setManager);
         }
@@ -128,6 +132,10 @@ public class HotelService {
         hotel.setDescription(updateDTO.getDescription());
         hotel.setStatus(updateDTO.getStatus());
 
+        if (updateDTO.getImageUrl() != null && !updateDTO.getImageUrl().isBlank()) {
+            hotel.setImageUrl(updateDTO.getImageUrl());
+        }
+
         if (updateDTO.getManagerId() != null) {
             userRepository.findById(updateDTO.getManagerId()).ifPresent(hotel::setManager);
         }
@@ -144,11 +152,26 @@ public class HotelService {
     }
 
     @Transactional
-    public String uploadImage(Long hotelId, MultipartFile file) {
+    public String uploadImage(Long hotelId, MultipartFile file, Integer replaceIndex) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin khách sạn"));
         String imageUrl = fileStorageService.storeImage(file, "hotels");
-        hotel.setImageUrl(imageUrl);
+        
+        if (replaceIndex != null && hotel.getImageUrl() != null && !hotel.getImageUrl().isBlank()) {
+            List<String> images = new java.util.ArrayList<>(Arrays.asList(hotel.getImageUrl().split(",")));
+            if (replaceIndex >= 0 && replaceIndex < images.size()) {
+                images.set(replaceIndex, imageUrl);
+                hotel.setImageUrl(String.join(",", images));
+            } else {
+                hotel.setImageUrl(imageUrl + "," + hotel.getImageUrl());
+            }
+        } else {
+            if (hotel.getImageUrl() != null && !hotel.getImageUrl().isBlank()) {
+                hotel.setImageUrl(imageUrl + "," + hotel.getImageUrl());
+            } else {
+                hotel.setImageUrl(imageUrl);
+            }
+        }
         hotelRepository.save(hotel);
         return imageUrl;
     }
