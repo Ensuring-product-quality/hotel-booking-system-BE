@@ -184,7 +184,7 @@ public class BookingService {
     @Transactional
     public BookingResponseDTO checkInBooking(Long bookingId) {
         Booking booking = findAccessibleBooking(bookingId);
-        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setStatus(BookingStatus.CHECKED_IN);
         Room room = booking.getRoom();
         room.setStatus("occupied");
         roomRepository.save(room);
@@ -194,7 +194,7 @@ public class BookingService {
     @Transactional
     public BookingResponseDTO checkOutBooking(Long bookingId) {
         Booking booking = findAccessibleBooking(bookingId);
-        booking.setStatus(BookingStatus.COMPLETED);
+        booking.setStatus(BookingStatus.CHECKED_OUT);
         Room room = booking.getRoom();
         room.setStatus("cleaning");
         roomRepository.save(room);
@@ -207,7 +207,7 @@ public class BookingService {
         roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin phòng"));
         List<BookingStatus> activeStatuses =
-                Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
+                Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT, BookingStatus.CHECKED_IN);
         return !bookingRepository.hasOverlappingBookings(roomId, checkIn, checkOut, activeStatuses);
     }
 
@@ -269,7 +269,9 @@ public class BookingService {
         }
         boolean valid = switch (current) {
             case PENDING_PAYMENT -> next == BookingStatus.CONFIRMED || next == BookingStatus.CANCELLED;
-            case CONFIRMED -> next == BookingStatus.COMPLETED || next == BookingStatus.CANCELLED;
+            case CONFIRMED -> next == BookingStatus.CHECKED_IN || next == BookingStatus.CANCELLED || next == BookingStatus.COMPLETED;
+            case CHECKED_IN -> next == BookingStatus.CHECKED_OUT || next == BookingStatus.CANCELLED || next == BookingStatus.COMPLETED;
+            case CHECKED_OUT -> next == BookingStatus.COMPLETED || next == BookingStatus.CANCELLED;
             case CANCELLED, COMPLETED -> false;
         };
         if (!valid) {
@@ -297,6 +299,8 @@ public class BookingService {
                 .totalPrice(booking.getTotalPrice())
                 .status(booking.getStatus().name().toLowerCase())
                 .paymentStatus(paymentStatus)
+                .userFullName(booking.getUser().getFullName())
+                .userPhone(booking.getUser().getPhone())
                 .build();
     }
 
@@ -313,6 +317,8 @@ public class BookingService {
                 .guests(booking.getGuests())
                 .totalPrice(booking.getTotalPrice())
                 .status(booking.getStatus().name().toLowerCase())
+                .userFullName(booking.getUser().getFullName())
+                .userPhone(booking.getUser().getPhone())
                 .build();
     }
 

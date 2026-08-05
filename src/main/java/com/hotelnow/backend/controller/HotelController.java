@@ -112,8 +112,9 @@ public class HotelController {
     @PostMapping("/{hotelId}/images")
     public ResponseEntity<ApiResponse<String>> uploadHotelImage(
             @PathVariable Long hotelId,
-            @RequestParam("file") MultipartFile file) {
-        String imageUrl = hotelService.uploadImage(hotelId, file);
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "replaceIndex", required = false) Integer replaceIndex) {
+        String imageUrl = hotelService.uploadImage(hotelId, file, replaceIndex);
         return ResponseEntity.ok(ApiResponse.success("Tải lên hình ảnh thành công", imageUrl, HttpStatus.OK.value()));
     }
 }

@@ -33,7 +33,7 @@ public class Hotel {
     @Column(nullable = false)
     private Double averageRating = 0.0;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
