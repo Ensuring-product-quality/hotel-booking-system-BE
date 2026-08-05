@@ -360,7 +360,7 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookedDateRangeDTO> getBookedDatesForRoom(Long roomId) {
-        List<BookingStatus> activeStatuses = Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT);
+        List<BookingStatus> activeStatuses = Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING_PAYMENT, BookingStatus.CHECKED_IN);
         return bookingRepository.findByRoomIdAndStatusIn(roomId, activeStatuses).stream()
                 .map(b -> new BookedDateRangeDTO(b.getCheckInDate(), b.getCheckOutDate()))
                 .toList();
