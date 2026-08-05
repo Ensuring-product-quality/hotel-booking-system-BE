@@ -206,6 +206,18 @@ public class BookingService {
     @Transactional
     public BookingResponseDTO checkOutBooking(Long bookingId) {
         Booking booking = findAccessibleBooking(bookingId);
+        
+        // Nếu check-out sớm hơn ngày trả phòng dự kiến, cập nhật ngày trả phòng thực tế và tính lại tiền
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(booking.getCheckOutDate())) {
+            booking.setCheckOutDate(today);
+            long nights = java.time.temporal.ChronoUnit.DAYS.between(booking.getCheckInDate(), today);
+            if (nights <= 0) {
+                nights = 1; // Tính tối thiểu 1 đêm nếu nhận và trả phòng cùng ngày
+            }
+            booking.setTotalPrice(booking.getRoom().getPrice().multiply(java.math.BigDecimal.valueOf(nights)));
+        }
+
         booking.setStatus(BookingStatus.CHECKED_OUT);
         Room room = booking.getRoom();
         room.setStatus("cleaning");
