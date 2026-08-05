@@ -33,6 +33,8 @@ public class HotelController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) java.math.BigDecimal minPrice,
             @RequestParam(required = false) java.math.BigDecimal maxPrice,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkInDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkOutDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
@@ -47,7 +49,7 @@ public class HotelController {
             }
         } catch (Exception ignored) {}
 
-        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, pageable);
+        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, checkInDate, checkOutDate, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
@@ -65,6 +67,8 @@ public class HotelController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) java.math.BigDecimal minPrice,
             @RequestParam(required = false) java.math.BigDecimal maxPrice,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkInDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkOutDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
@@ -79,7 +83,7 @@ public class HotelController {
             }
         } catch (Exception ignored) {}
 
-        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, pageable);
+        PageResponse<HotelResponseDTO> data = hotelService.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, checkInDate, checkOutDate, pageable);
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 

@@ -39,16 +39,16 @@ public class HotelService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<HotelResponseDTO> searchHotels(String city, Integer stars, String keyword, String status, Long managerId, java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice, Pageable pageable) {
+    public PageResponse<HotelResponseDTO> searchHotels(String city, Integer stars, String keyword, String status, Long managerId, java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice, java.time.LocalDate checkInDate, java.time.LocalDate checkOutDate, Pageable pageable) {
         Page<Hotel> hotelsPage;
         Sort.Order priceOrder = pageable.getSort().getOrderFor("price");
         if (priceOrder != null) {
             Pageable pricePage = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
             hotelsPage = priceOrder.isAscending()
-                    ? hotelRepository.searchHotelsByLowestPriceAsc(city, stars, keyword, status, managerId, minPrice, maxPrice, pricePage)
-                    : hotelRepository.searchHotelsByLowestPriceDesc(city, stars, keyword, status, managerId, minPrice, maxPrice, pricePage);
+                    ? hotelRepository.searchHotelsByLowestPriceAsc(city, stars, keyword, status, managerId, minPrice, maxPrice, checkInDate, checkOutDate, pricePage)
+                    : hotelRepository.searchHotelsByLowestPriceDesc(city, stars, keyword, status, managerId, minPrice, maxPrice, checkInDate, checkOutDate, pricePage);
         } else {
-            hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, pageable);
+            hotelsPage = hotelRepository.searchHotels(city, stars, keyword, status, managerId, minPrice, maxPrice, checkInDate, checkOutDate, pageable);
         }
         return PageResponse.fromPage(hotelsPage.map(this::mapToHotelResponse));
     }
