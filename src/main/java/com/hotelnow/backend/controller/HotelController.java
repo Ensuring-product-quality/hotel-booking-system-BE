@@ -13,16 +13,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/hotels")
 public class HotelController {
 
     private final HotelService hotelService;
     private final com.hotelnow.backend.service.CurrentUserService currentUserService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
-    public HotelController(HotelService hotelService, com.hotelnow.backend.service.CurrentUserService currentUserService) {
+    public HotelController(HotelService hotelService, com.hotelnow.backend.service.CurrentUserService currentUserService, org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.hotelService = hotelService;
         this.currentUserService = currentUserService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @GetMapping
@@ -120,5 +125,36 @@ public class HotelController {
             @RequestParam(value = "replaceIndex", required = false) Integer replaceIndex) {
         String imageUrl = hotelService.uploadImage(hotelId, file, replaceIndex);
         return ResponseEntity.ok(ApiResponse.success("Tải lên hình ảnh thành công", imageUrl, HttpStatus.OK.value()));
+    }
+
+    @GetMapping("/diagnostic/db")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDbDiagnostics() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String dbName = jdbcTemplate.getDataSource().getConnection().getMetaData().getDatabaseProductName();
+            result.put("database", dbName);
+        } catch (Exception e) {
+            result.put("database_error", e.getMessage());
+        }
+
+        try {
+            Map<String, Object> bookingsStatus = jdbcTemplate.queryForMap(
+                "SELECT DATA_TYPE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'bookings' AND COLUMN_NAME = 'status'"
+            );
+            result.put("bookings_status_column", bookingsStatus);
+        } catch (Exception e) {
+            result.put("bookings_status_error", e.getMessage());
+        }
+
+        try {
+            Map<String, Object> usersRole = jdbcTemplate.queryForMap(
+                "SELECT DATA_TYPE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'role'"
+            );
+            result.put("users_role_column", usersRole);
+        } catch (Exception e) {
+            result.put("users_role_error", e.getMessage());
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }
