@@ -12,6 +12,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             "(:stars IS NULL OR h.stars = :stars) AND " +
             "(:status IS NULL OR h.status = :status) AND " +
             "(:managerId IS NULL OR h.manager.id = :managerId) AND " +
+            "(:minPrice IS NULL OR h.price >= :minPrice) AND " +
+            "(:maxPrice IS NULL OR h.price <= :maxPrice) AND " +
             "(:keyword IS NULL OR LOWER(h.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(h.description) LIKE LOWER(CONCAT('%', :keyword, '%')))";
 
@@ -20,12 +22,16 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             "(:stars IS NULL OR h.stars = :stars) AND " +
             "(:status IS NULL OR h.status = :status) AND " +
             "(:managerId IS NULL OR h.manager.id = :managerId) AND " +
+            "(:minPrice IS NULL OR h.price >= :minPrice) AND " +
+            "(:maxPrice IS NULL OR h.price <= :maxPrice) AND " +
             "(:keyword IS NULL OR LOWER(h.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(h.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Hotel> searchHotels(@Param("city") String city,
                              @Param("stars") Integer stars,
                              @Param("keyword") String keyword,
                              @Param("status") String status,
                              @Param("managerId") Long managerId,
+                             @Param("minPrice") java.math.BigDecimal minPrice,
+                             @Param("maxPrice") java.math.BigDecimal maxPrice,
                              Pageable pageable);
 
     @Query(
@@ -39,6 +45,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             @Param("keyword") String keyword,
             @Param("status") String status,
             @Param("managerId") Long managerId,
+            @Param("minPrice") java.math.BigDecimal minPrice,
+            @Param("maxPrice") java.math.BigDecimal maxPrice,
             Pageable pageable);
 
     @Query(
@@ -52,5 +60,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             @Param("keyword") String keyword,
             @Param("status") String status,
             @Param("managerId") Long managerId,
+            @Param("minPrice") java.math.BigDecimal minPrice,
+            @Param("maxPrice") java.math.BigDecimal maxPrice,
             Pageable pageable);
 }
