@@ -52,7 +52,7 @@ class FileStorageServiceTest {
         BadRequestException error =
                 assertThrows(BadRequestException.class, () -> storage.storeImage(file, "avatars"));
 
-        assertEquals("Uploaded file is not a valid image", error.getMessage());
+        assertEquals("Tệp tải lên không phải là tệp hình ảnh hợp lệ", error.getMessage());
     }
 
     @Test
@@ -63,6 +63,6 @@ class FileStorageServiceTest {
         BadRequestException error =
                 assertThrows(BadRequestException.class, () -> storage.storeImage(file, "avatars"));
 
-        assertEquals("Image content does not match its content type", error.getMessage());
+        assertEquals("Nội dung hình ảnh không đúng định dạng khai báo", error.getMessage());
     }
 }
