@@ -109,7 +109,7 @@ public class HotelController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin khách sạn thành công", data, HttpStatus.OK.value()));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @DeleteMapping("/{hotelId}")
     public ResponseEntity<ApiResponse<Void>> deleteHotel(@PathVariable Long hotelId) {
         hotelService.deleteHotel(hotelId);
