@@ -114,6 +114,13 @@ public class HotelService {
 
         if (createDTO.getManagerId() != null) {
             userRepository.findById(createDTO.getManagerId()).ifPresent(hotel::setManager);
+        } else {
+            try {
+                com.hotelnow.backend.entity.User current = currentUserService.requireCurrentUser();
+                if (current.getRole() == com.hotelnow.backend.entity.Role.MANAGER) {
+                    hotel.setManager(current);
+                }
+            } catch (Exception ignored) {}
         }
 
         Hotel savedHotel = hotelRepository.save(hotel);
