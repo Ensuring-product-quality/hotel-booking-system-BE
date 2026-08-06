@@ -26,16 +26,19 @@ public class HotelService {
     private final RoomImageRepository roomImageRepository;
     private final FileStorageService fileStorageService;
     private final com.hotelnow.backend.repository.UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository,
                         RoomImageRepository roomImageRepository,
                         FileStorageService fileStorageService,
-                        com.hotelnow.backend.repository.UserRepository userRepository) {
+                        com.hotelnow.backend.repository.UserRepository userRepository,
+                        CurrentUserService currentUserService) {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
         this.roomImageRepository = roomImageRepository;
         this.fileStorageService = fileStorageService;
         this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional(readOnly = true)
